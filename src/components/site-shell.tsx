@@ -152,6 +152,20 @@ export function SiteShell({
                 </div>
               </div>
             </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href="/auth/sign-in"
+                className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/auth/register"
+                className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs font-medium text-cyan-100 transition hover:bg-cyan-300/20"
+              >
+                Create account
+              </Link>
+            </div>
           </div>
 
           <MotionFade className="px-5 py-6 lg:px-8" delay={0.06}>

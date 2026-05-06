@@ -90,6 +90,7 @@ export async function getLfgPostsFromDb(): Promise<LfgCard[]> {
   });
 
   return posts.map((post) => ({
+    id: post.id,
     title: post.title,
     game: post.game.name,
     region: post.region,

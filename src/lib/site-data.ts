@@ -28,6 +28,7 @@ export type ClipCard = {
 };
 
 export type LfgCard = {
+  id: string;
   title: string;
   game: string;
   region: string;
@@ -144,6 +145,7 @@ export const featuredClips: ClipCard[] = [
 
 export const lfgPosts: LfgCard[] = [
   {
+    id: "seed-lfg-1",
     title: "Immortal stack for disciplined ranked push",
     game: "Valorant",
     region: "NA Central",
@@ -155,6 +157,7 @@ export const lfgPosts: LfgCard[] = [
     openSpots: 2,
   },
   {
+    id: "seed-lfg-2",
     title: "Late-night Helldivers squad, zero rage",
     game: "Helldivers 2",
     region: "NA East",
@@ -166,6 +169,7 @@ export const lfgPosts: LfgCard[] = [
     openSpots: 2,
   },
   {
+    id: "seed-lfg-3",
     title: "Fresh Tarkov duo into stable four-stack",
     game: "Escape from Tarkov",
     region: "EU West",
@@ -177,6 +181,7 @@ export const lfgPosts: LfgCard[] = [
     openSpots: 3,
   },
   {
+    id: "seed-lfg-4",
     title: "Heroic raid prep with guides and logs",
     game: "World of Warcraft",
     region: "NA East",

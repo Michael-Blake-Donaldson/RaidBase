@@ -1,6 +1,8 @@
-import { Filter, Mic, TimerReset, Users } from "lucide-react";
+import { Filter } from "lucide-react";
 
+import { LfgInteractiveBoard } from "@/components/lfg-interactive-board";
 import { SiteShell } from "@/components/site-shell";
+import { getServerAuthSession } from "@/lib/auth/session";
 import { readLfgPosts } from "@/server/queries/content";
 
 const filterPills = [
@@ -13,7 +15,7 @@ const filterPills = [
 ];
 
 export default async function LfgPage() {
-  const lfgPosts = await readLfgPosts();
+  const [lfgPosts, session] = await Promise.all([readLfgPosts(), getServerAuthSession()]);
 
   return (
     <SiteShell
@@ -43,54 +45,7 @@ export default async function LfgPage() {
           </div>
         </aside>
 
-        <section className="grid gap-4">
-          {lfgPosts.map((post) => (
-            <article key={post.title} className="rounded-[28px] border border-white/10 bg-white/5 p-6">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-semibold text-white">{post.title}</h2>
-                  <p className="mt-2 text-sm text-slate-400">{post.game} • {post.region} • {post.rank}</p>
-                </div>
-                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-medium text-emerald-100">
-                  {post.openSpots} open spots
-                </span>
-              </div>
-
-              <div className="mt-5 grid gap-4 lg:grid-cols-3">
-                <div className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4">
-                  <p className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
-                    <Users className="h-4 w-4 text-cyan-200" />
-                    Roles needed
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {post.roles.map((role) => (
-                      <span key={role} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
-                        {role}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4">
-                  <p className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
-                    <TimerReset className="h-4 w-4 text-cyan-200" />
-                    Schedule and tone
-                  </p>
-                  <p className="text-sm leading-7 text-slate-300">{post.schedule}</p>
-                  <p className="text-sm text-slate-400">{post.tone}</p>
-                </div>
-                <div className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4">
-                  <p className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
-                    <Mic className="h-4 w-4 text-cyan-200" />
-                    Comms expectation
-                  </p>
-                  <p className="text-sm leading-7 text-slate-300">
-                    {post.micRequired ? "Microphone required for callouts and review" : "Mic optional, but concise communication preferred"}
-                  </p>
-                </div>
-              </div>
-            </article>
-          ))}
-        </section>
+        <LfgInteractiveBoard initialPosts={lfgPosts} isAuthenticated={Boolean(session?.user?.id)} />
       </div>
     </SiteShell>
   );
