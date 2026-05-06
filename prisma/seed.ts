@@ -1,8 +1,11 @@
 import { PrismaClient, SubscriptionPlan, SubscriptionStatus, UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
+  const defaultPassword = await bcrypt.hash("RaidbaseDemo!2026", 12);
+
   await prisma.notification.deleteMany();
   await prisma.review.deleteMany();
   await prisma.sessionParticipant.deleteMany();
@@ -32,6 +35,7 @@ async function main() {
     data: {
       email: "ghosttrace@raidbase.gg",
       username: "ghosttrace",
+      passwordHash: defaultPassword,
       role: UserRole.ADMIN,
       emailVerifiedAt: new Date(),
       profile: {
@@ -77,6 +81,7 @@ async function main() {
     data: {
       email: "emberraid@raidbase.gg",
       username: "emberraid",
+      passwordHash: defaultPassword,
       emailVerifiedAt: new Date(),
       profile: {
         create: {
@@ -120,6 +125,7 @@ async function main() {
     data: {
       email: "vectorhush@raidbase.gg",
       username: "vectorhush",
+      passwordHash: defaultPassword,
       emailVerifiedAt: new Date(),
       profile: {
         create: {
