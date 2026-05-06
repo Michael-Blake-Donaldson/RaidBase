@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { MotionFade } from "@/components/motion-fade";
 import { navItems } from "@/lib/site-data";
+import { siteConfig } from "@/lib/site-config";
 
 type SiteShellProps = {
   activePath: string;
@@ -96,8 +97,27 @@ export function SiteShell({
           </div>
         </aside>
 
-        <main className="flex-1 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(19,36,58,0.88)_0%,rgba(7,17,31,0.96)_100%)] shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur">
+        <main id="main-content" className="flex-1 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(19,36,58,0.88)_0%,rgba(7,17,31,0.96)_100%)] shadow-[0_20px_80px_rgba(0,0,0,0.35)] backdrop-blur">
           <div className="border-b border-white/10 px-5 py-4 lg:px-8">
+            <div className="mb-4 flex gap-2 overflow-x-auto xl:hidden">
+              {navItems.map((item) => {
+                const active = isActive(activePath, item.href);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-medium transition ${
+                      active
+                        ? "border border-cyan-300/35 bg-cyan-300/12 text-white"
+                        : "border border-white/10 bg-white/5 text-slate-300 hover:border-cyan-300/20 hover:text-white"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
             <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
               <div>
                 <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.28em] text-cyan-100">
@@ -138,12 +158,20 @@ export function SiteShell({
             {children}
           </MotionFade>
 
-          <div className="flex items-center justify-between border-t border-white/10 px-5 py-4 text-xs text-slate-400 lg:px-8">
+          <div className="flex flex-col gap-4 border-t border-white/10 px-5 py-4 text-xs text-slate-400 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4 text-cyan-200" />
               In-app notifications, moderation, billing, and safety controls are wired into the MVP shell.
             </div>
-            <p>Built for competitive PC sessions, not generic chat.</p>
+            <div className="flex flex-wrap items-center gap-4">
+              <Link href={siteConfig.links.privacy} className="transition hover:text-white">
+                Privacy
+              </Link>
+              <Link href={siteConfig.links.terms} className="transition hover:text-white">
+                Terms
+              </Link>
+              <p>Built for competitive PC sessions, not generic chat.</p>
+            </div>
           </div>
         </main>
       </div>

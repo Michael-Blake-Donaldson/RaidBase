@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import type { Viewport } from "next";
 import { Inter, Orbitron, Sora } from "next/font/google";
 import "./globals.css";
+
+import { siteConfig } from "@/lib/site-config";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -18,9 +21,33 @@ const orbitron = Orbitron({
 });
 
 export const metadata: Metadata = {
-  title: "Raidbase | PC Gaming Squad Ecosystem",
-  description:
-    "Raidbase helps PC gamers find reliable squads, prove their skill, and build a reputation that travels across games.",
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: "Raidbase | PC Gaming Squad Ecosystem",
+    template: "%s | Raidbase",
+  },
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    title: "Raidbase | PC Gaming Squad Ecosystem",
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    url: siteConfig.url,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Raidbase | PC Gaming Squad Ecosystem",
+    description: siteConfig.description,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#07111f",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({
@@ -33,7 +60,15 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${sora.variable} ${orbitron.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-cyan-300 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-slate-950"
+        >
+          Skip to content
+        </a>
+        {children}
+      </body>
     </html>
   );
 }
