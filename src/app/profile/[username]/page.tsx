@@ -3,19 +3,16 @@ import { notFound } from "next/navigation";
 import { BadgeCheck, CalendarRange, Headset, ShieldCheck, Swords, Video } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
-import { featuredClips, recommendedPlayers } from "@/lib/site-data";
+import { readClips, readPlayers } from "@/server/queries/content";
 
 type ProfilePageProps = {
   params: Promise<{ username: string }>;
 };
 
-function getPlayer(username: string) {
-  return recommendedPlayers.find((player) => player.username === username);
-}
-
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
-  const player = getPlayer(username);
+  const players = await readPlayers();
+  const player = players.find((entry) => entry.username === username);
 
   if (!player) {
     return {
@@ -31,7 +28,8 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
-  const player = getPlayer(username);
+  const [players, featuredClips] = await Promise.all([readPlayers(), readClips()]);
+  const player = players.find((entry) => entry.username === username);
 
   if (!player) {
     notFound();

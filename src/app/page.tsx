@@ -15,14 +15,18 @@ import {
 import { SiteShell } from "@/components/site-shell";
 import {
   activityFeed,
-  featuredClips,
-  lfgPosts,
   platformStats,
-  recommendedPlayers,
-  squads,
 } from "@/lib/site-data";
+import { readClips, readLfgPosts, readPlayers, readSquads } from "@/server/queries/content";
 
-export default function Home() {
+export default async function Home() {
+  const [recommendedPlayers, lfgPosts, featuredClips, squads] = await Promise.all([
+    readPlayers(),
+    readLfgPosts(),
+    readClips(),
+    readSquads(),
+  ]);
+
   return (
     <SiteShell
       activePath="/"

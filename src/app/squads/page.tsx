@@ -1,9 +1,11 @@
 import { Activity, ShieldCheck, Users2 } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
-import { squads } from "@/lib/site-data";
+import { readSquads } from "@/server/queries/content";
 
-export default function SquadsPage() {
+export default async function SquadsPage() {
+  const squads = await readSquads();
+
   return (
     <SiteShell
       activePath="/squads"

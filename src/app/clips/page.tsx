@@ -1,9 +1,11 @@
 import { Film, Flame, Trophy } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
-import { featuredClips } from "@/lib/site-data";
+import { readClips } from "@/server/queries/content";
 
-export default function ClipsPage() {
+export default async function ClipsPage() {
+  const featuredClips = await readClips();
+
   return (
     <SiteShell
       activePath="/clips"

@@ -1,7 +1,7 @@
 import { Filter, Mic, TimerReset, Users } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
-import { lfgPosts } from "@/lib/site-data";
+import { readLfgPosts } from "@/server/queries/content";
 
 const filterPills = [
   "Tactical shooters",
@@ -12,7 +12,9 @@ const filterPills = [
   "High trust only",
 ];
 
-export default function LfgPage() {
+export default async function LfgPage() {
+  const lfgPosts = await readLfgPosts();
+
   return (
     <SiteShell
       activePath="/lfg"

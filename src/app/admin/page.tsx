@@ -1,9 +1,11 @@
 import { AlertTriangle, ShieldAlert, TimerReset } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
-import { moderationQueue } from "@/lib/site-data";
+import { readModerationQueue } from "@/server/queries/content";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const moderationQueue = await readModerationQueue();
+
   return (
     <SiteShell
       activePath="/admin"
