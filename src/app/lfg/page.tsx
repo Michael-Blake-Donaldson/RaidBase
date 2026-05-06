@@ -24,8 +24,8 @@ export default async function LfgPage() {
       title="Find squads by compatibility, not guesswork."
       description="Posts are filtered by game, rank, region, role needs, mic requirements, schedule, and trust signals so players can choose reliable teammates fast."
     >
-      <div className="grid gap-6 xl:grid-cols-[0.72fr_1.28fr]">
-        <aside className="space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-6">
+      <div className="grid gap-6 xl:grid-cols-[0.62fr_1.38fr]">
+        <aside className="space-y-4 border border-white/10 bg-slate-950/30 p-6 xl:sticky xl:top-28 xl:h-fit">
           <div className="flex items-center gap-3">
             <Filter className="h-5 w-5 text-cyan-200" />
             <h2 className="text-xl font-semibold text-white">Filter stack</h2>
@@ -35,12 +35,12 @@ export default async function LfgPage() {
           </p>
           <div className="flex flex-wrap gap-2">
             {filterPills.map((pill) => (
-              <span key={pill} className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-2 text-xs text-slate-200">
+              <span key={pill} className="rounded-full border border-white/15 bg-slate-900/60 px-3 py-2 text-xs text-slate-200">
                 {pill}
               </span>
             ))}
           </div>
-          <div className="rounded-[24px] border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm leading-7 text-cyan-100">
+          <div className="border border-cyan-300/25 bg-cyan-300/10 p-4 text-sm leading-7 text-cyan-100">
             Auto-suggestions prioritize users with compatible schedules, low conflict history, and roles your current group still lacks.
           </div>
         </aside>

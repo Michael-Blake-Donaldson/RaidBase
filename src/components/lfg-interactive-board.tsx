@@ -127,7 +127,7 @@ export function LfgInteractiveBoard({ initialPosts, isAuthenticated }: LfgIntera
 
   return (
     <section className="grid gap-4">
-      <article className="rounded-[28px] border border-cyan-300/20 bg-cyan-300/10 p-5">
+      <article className="border border-cyan-300/20 bg-cyan-300/10 p-5">
         <h2 className="text-xl font-semibold text-white">Create an LFG post</h2>
         <p className="mt-2 text-sm text-slate-100">
           This is live. New posts save to the database and appear in the board immediately.
@@ -261,7 +261,7 @@ export function LfgInteractiveBoard({ initialPosts, isAuthenticated }: LfgIntera
       </article>
 
       {posts.map((post) => (
-        <article key={post.id} className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <article key={post.id} className="border border-white/10 bg-slate-950/30 p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-xl font-semibold text-white">{post.title}</h2>
@@ -275,7 +275,7 @@ export function LfgInteractiveBoard({ initialPosts, isAuthenticated }: LfgIntera
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-3">
-            <div className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4">
+            <div className="border border-white/10 bg-slate-950/55 p-4">
               <p className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
                 <Users className="h-4 w-4 text-cyan-200" />
                 Roles needed
@@ -288,7 +288,7 @@ export function LfgInteractiveBoard({ initialPosts, isAuthenticated }: LfgIntera
                 ))}
               </div>
             </div>
-            <div className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4">
+            <div className="border border-white/10 bg-slate-950/55 p-4">
               <p className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
                 <TimerReset className="h-4 w-4 text-cyan-200" />
                 Schedule and tone
@@ -296,7 +296,7 @@ export function LfgInteractiveBoard({ initialPosts, isAuthenticated }: LfgIntera
               <p className="text-sm leading-7 text-slate-300">{post.schedule}</p>
               <p className="text-sm text-slate-400">{post.tone}</p>
             </div>
-            <div className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4">
+            <div className="border border-white/10 bg-slate-950/55 p-4">
               <p className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
                 <Mic className="h-4 w-4 text-cyan-200" />
                 Comms expectation

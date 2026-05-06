@@ -110,9 +110,9 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+    <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
       <section className="grid gap-4">
-        <article className="rounded-[28px] border border-cyan-300/20 bg-cyan-300/10 p-6">
+        <article className="border border-cyan-300/20 bg-cyan-300/10 p-6">
           <h2 className="text-2xl font-semibold text-white">Create your squad</h2>
           <p className="mt-2 text-sm text-slate-100">
             This creates a real squad in the database, adds you as owner, and generates an invite code when privacy requires it.
@@ -200,7 +200,7 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
         </article>
 
         {squads.map((squad) => (
-          <article key={squad.id} className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <article key={squad.id} className="border border-white/10 bg-slate-950/30 p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-2xl font-semibold text-white">{squad.name}</h2>
@@ -223,7 +223,7 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
               ))}
             </div>
 
-            <div className="mt-4 space-y-3 rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+            <div className="mt-4 space-y-3 border border-white/10 bg-slate-950/55 p-4">
               <p className="text-xs text-slate-300">
                 Privacy: <span className="font-semibold text-white">{squad.privacy}</span>
               </p>
@@ -259,15 +259,15 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
         ))}
       </section>
 
-      <aside className="space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-6">
+      <aside className="space-y-4 border border-white/10 bg-slate-950/30 p-6 xl:sticky xl:top-28 xl:h-fit">
         <div className="flex items-center gap-3">
           <Users2 className="h-5 w-5 text-cyan-200" />
           <h2 className="text-xl font-semibold text-white">User-first squad controls</h2>
         </div>
-        <div className="rounded-[24px] border border-white/10 bg-slate-950/45 p-4 text-sm leading-7 text-slate-300">
+        <div className="border border-white/10 bg-slate-950/55 p-4 text-sm leading-7 text-slate-300">
           Users can now create squads, choose privacy, and join immediately when rules allow. Invite-only squads enforce code entry before membership.
         </div>
-        <div className="rounded-[24px] border border-emerald-300/20 bg-emerald-300/10 p-4">
+        <div className="border border-emerald-300/20 bg-emerald-300/10 p-4">
           <p className="mb-2 flex items-center gap-2 text-sm font-medium text-emerald-100">
             <ShieldCheck className="h-4 w-4" />
             Safety and trust
