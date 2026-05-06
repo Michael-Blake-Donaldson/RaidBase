@@ -2,7 +2,7 @@
 
 I built Raidbase as a desktop-first PC gaming squad platform for people who are tired of wasting nights on random teammates with no context, no accountability, and no continuity. The idea is simple: give players a better way to prove who they are, find compatible squads, track reputation after real sessions, and keep good teams together.
 
-This project is currently an MVP frontend shell. It is designed to show the full product direction clearly, with the main user-facing surfaces already in place, while leaving the backend integration phase as the next step.
+This project is now an MVP+ application shell with working authentication, settings persistence, guarded APIs, health checks, and CI quality gates. It still has roadmap items, but the core release workflow is functional.
 
 ## What The App Does
 
@@ -20,7 +20,7 @@ The current app includes:
 
 ## How It Works Right Now
 
-Right now, the app is using shared mock domain data to drive the interface. That means the routes, cards, stats, and profile content are all rendered from structured TypeScript data instead of a live database.
+The app combines seeded/live SQLite data via Prisma with shared domain presentation data for product storytelling surfaces.
 
 That gives me a few advantages at this stage:
 
@@ -28,7 +28,7 @@ That gives me a few advantages at this stage:
 - I can build and validate the full user flow across pages quickly
 - I can refine the UI, information architecture, and route design before adding persistence
 
-The current version is not pretending to have a live auth system, real billing, or production persistence yet. Those pieces should come in the next implementation phase.
+The current version includes live credential authentication, profile settings persistence, session-protected APIs, billing endpoint wiring (Stripe-config dependent), and end-to-end smoke validation.
 
 ## Framework And Architecture Details
 
@@ -165,16 +165,22 @@ What is implemented now:
 - Shared desktop-first layout shell
 - Product-specific visual system
 - Public-release supporting pages and metadata files
+- Credential authentication via NextAuth with Prisma adapter
+- User registration API with validation and rate limiting
+- Functional settings page with DB-backed profile updates
+- Health check endpoint at `/api/health`
+- Route-level loading and error boundaries for key flows
+- Global application error boundary
+- Web-vitals ingest endpoint and client reporter
+- Playwright smoke tests and Lighthouse performance-budget CI gate
 
 What is still intentionally mocked or pending:
 
-- database and Prisma schema
-- Auth.js or equivalent authentication flow
 - Stripe billing
 - persistent moderation data
 - live notifications
 - clip storage and upload handling
-- server-side actions and validation
+- broader domain-specific server actions and deeper integration tests
 
 ## Next Backend Phase
 
