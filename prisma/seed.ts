@@ -214,6 +214,43 @@ async function main() {
     ],
   });
 
+  const sampleSession = await prisma.session.create({
+    data: {
+      gameId: games[0].id,
+      createdById: ghost.id,
+      startedAt: new Date(Date.now() - 1000 * 60 * 90),
+      endedAt: new Date(Date.now() - 1000 * 60 * 10),
+      mode: "Ranked",
+      notes: "Disciplined stack with post-session review.",
+    },
+  });
+
+  await prisma.sessionParticipant.createMany({
+    data: [
+      {
+        sessionId: sampleSession.id,
+        userId: ghost.id,
+        squadId: nightCircuit.id,
+        rolePlayed: "Initiator",
+        outcome: "Win",
+      },
+      {
+        sessionId: sampleSession.id,
+        userId: ember.id,
+        squadId: nightCircuit.id,
+        rolePlayed: "Support",
+        outcome: "Win",
+      },
+      {
+        sessionId: sampleSession.id,
+        userId: vector.id,
+        squadId: nightCircuit.id,
+        rolePlayed: "Entry",
+        outcome: "Win",
+      },
+    ],
+  });
+
   await prisma.clip.createMany({
     data: [
       {
