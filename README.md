@@ -130,6 +130,32 @@ For a production build check:
 npm run build
 ```
 
+## Production UX Baseline Implemented
+
+The home experience and shell were refactored to improve readability, speed, and interaction quality:
+
+- Reduced information density on the command page so primary actions are obvious
+- Reworked content hierarchy so users scan high-value actions first, supporting detail second
+- Added explicit empty-state handling for teammates, LFG posts, clips, squads, and activity feed
+- Simplified shell typography and reduced all-caps/tracking-heavy labels
+- Tightened entry animations and added reduced-motion fallback behavior
+- Added a route loading skeleton at `src/app/loading.tsx` for better perceived performance
+- Improved global focus-visible styling for clearer keyboard navigation
+- Reduced visual noise from background overlay density, especially on smaller viewports
+
+### Recommended Production Gates
+
+Before deployment, run these checks in CI:
+
+- `npm run lint`
+- `npm run build`
+
+And track runtime metrics in production:
+
+- LCP under 2.5s
+- INP under 200ms
+- CLS under 0.1
+
 ## Current State
 
 What is implemented now:
