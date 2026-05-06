@@ -4,6 +4,8 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { validateUsername } from "@/lib/auth/username";
+import { getClientIp } from "@/lib/request";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -14,6 +16,19 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const rateLimit = enforceRateLimit({
+    key: `auth-register:${getClientIp(request)}`,
+    limit: 10,
+    windowMs: 60_000,
+  });
+
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { error: "Too many registration attempts. Please wait and try again." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
 
