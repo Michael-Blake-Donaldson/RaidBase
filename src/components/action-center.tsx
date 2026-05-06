@@ -24,14 +24,14 @@ const STORAGE_KEY = "raidbase-action-center-state";
 
 function priorityStyle(priority: ActionCenterItem["priority"]) {
   if (priority === "High") {
-    return "border-rose-300/30 bg-rose-300/10 text-rose-100";
+    return "border-rose-300/40 bg-rose-300/14 text-rose-900";
   }
 
   if (priority === "Medium") {
-    return "border-amber-300/30 bg-amber-300/10 text-amber-100";
+    return "border-amber-300/40 bg-amber-300/16 text-amber-900";
   }
 
-  return "border-emerald-300/30 bg-emerald-300/10 text-emerald-100";
+  return "border-emerald-300/40 bg-emerald-300/16 text-emerald-900";
 }
 
 export function ActionCenter({ items }: ActionCenterProps) {
@@ -73,33 +73,33 @@ export function ActionCenter({ items }: ActionCenterProps) {
   );
 
   return (
-    <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+    <article className="rb-panel rounded-[28px] p-6">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <p className="text-xs text-slate-400">Action center</p>
-          <h3 className="mt-2 text-2xl font-semibold text-white">What to do next</h3>
+          <p className="text-xs text-[#5f6772]">Action center</p>
+          <h3 className="mt-2 text-2xl font-semibold text-[#11161a]">What to do next</h3>
         </div>
-        <Bell className="h-5 w-5 text-cyan-200" />
+        <Bell className="h-5 w-5 text-[#12161a]" />
       </div>
 
       <div className="mb-4 grid grid-cols-3 gap-2 text-center text-xs">
-        <div className="rounded-xl border border-white/10 bg-slate-950/50 px-2 py-2 text-slate-300">
-          <p className="text-[11px] text-slate-500">Open</p>
-          <p className="mt-1 text-sm font-semibold text-white">{visibleItems.length}</p>
+        <div className="rounded-xl border border-black/10 bg-white/75 px-2 py-2 text-[#47505a]">
+          <p className="text-[11px] text-[#6b7480]">Open</p>
+          <p className="mt-1 text-sm font-semibold text-[#11161a]">{visibleItems.length}</p>
         </div>
-        <div className="rounded-xl border border-white/10 bg-slate-950/50 px-2 py-2 text-slate-300">
-          <p className="text-[11px] text-slate-500">Snoozed</p>
-          <p className="mt-1 text-sm font-semibold text-white">{snoozedCount}</p>
+        <div className="rounded-xl border border-black/10 bg-white/75 px-2 py-2 text-[#47505a]">
+          <p className="text-[11px] text-[#6b7480]">Snoozed</p>
+          <p className="mt-1 text-sm font-semibold text-[#11161a]">{snoozedCount}</p>
         </div>
-        <div className="rounded-xl border border-white/10 bg-slate-950/50 px-2 py-2 text-slate-300">
-          <p className="text-[11px] text-slate-500">Done</p>
-          <p className="mt-1 text-sm font-semibold text-white">{completedCount}</p>
+        <div className="rounded-xl border border-black/10 bg-white/75 px-2 py-2 text-[#47505a]">
+          <p className="text-[11px] text-[#6b7480]">Done</p>
+          <p className="mt-1 text-sm font-semibold text-[#11161a]">{completedCount}</p>
         </div>
       </div>
 
       <div className="space-y-3">
         {visibleItems.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-emerald-300/30 bg-emerald-300/10 p-4 text-sm text-emerald-100">
+          <div className="rounded-2xl border border-dashed border-emerald-300/40 bg-emerald-300/14 p-4 text-sm text-emerald-900">
             Nice run. You are caught up on every active action.
           </div>
         ) : null}
@@ -108,20 +108,20 @@ export function ActionCenter({ items }: ActionCenterProps) {
           const itemState = states[item.id] ?? "open";
 
           return (
-            <div key={item.id} className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4">
+            <div key={item.id} className="rounded-[22px] border border-black/10 bg-white/80 p-4">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <p className="text-sm font-semibold text-white">{item.title}</p>
+                <p className="text-sm font-semibold text-[#11161a]">{item.title}</p>
                 <span className={`rounded-full border px-2 py-0.5 text-[11px] ${priorityStyle(item.priority)}`}>
                   {item.priority}
                 </span>
               </div>
 
-              <p className="text-sm leading-6 text-slate-300">{item.detail}</p>
+              <p className="text-sm leading-6 text-[#3d4650]">{item.detail}</p>
 
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link
                   href={item.href}
-                  className="rounded-full border border-cyan-300/30 bg-cyan-300/12 px-3 py-1.5 text-xs font-medium text-cyan-100 transition hover:bg-cyan-300/20"
+                  className="rb-chip-dark rounded-full px-3 py-1.5 text-xs font-medium"
                 >
                   Open
                 </Link>
@@ -129,7 +129,7 @@ export function ActionCenter({ items }: ActionCenterProps) {
                 <button
                   type="button"
                   onClick={() => setStates((current) => ({ ...current, [item.id]: "done" }))}
-                  className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1.5 text-xs font-medium text-emerald-100 transition hover:bg-emerald-300/20"
+                  className="inline-flex items-center gap-1 rounded-full border border-emerald-300/40 bg-emerald-300/14 px-3 py-1.5 text-xs font-medium text-emerald-900 transition hover:bg-emerald-300/24"
                 >
                   <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
                   Done
@@ -143,7 +143,7 @@ export function ActionCenter({ items }: ActionCenterProps) {
                       [item.id]: itemState === "later" ? "open" : "later",
                     }))
                   }
-                  className="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:bg-amber-300/20"
+                  className="inline-flex items-center gap-1 rounded-full border border-amber-300/40 bg-amber-300/14 px-3 py-1.5 text-xs font-medium text-amber-900 transition hover:bg-amber-300/24"
                 >
                   <Clock3 className="h-3.5 w-3.5" aria-hidden />
                   {itemState === "later" ? "Un-snooze" : "Snooze"}
@@ -157,7 +157,7 @@ export function ActionCenter({ items }: ActionCenterProps) {
       <button
         type="button"
         onClick={() => setStates({})}
-        className="mt-4 inline-flex items-center gap-2 text-xs text-slate-300 transition hover:text-white"
+        className="mt-4 inline-flex items-center gap-2 text-xs text-[#4a5460] transition hover:text-[#11161a]"
       >
         <RefreshCcw className="h-3.5 w-3.5" aria-hidden />
         Reset action states

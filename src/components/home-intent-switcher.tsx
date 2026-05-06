@@ -69,13 +69,13 @@ export function HomeIntentSwitcher({ playerCount, lfgCount, squadCount }: HomeIn
   }, [lfgCount, mode, playerCount, squadCount]);
 
   return (
-    <section className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+    <section className="rb-panel rounded-[28px] p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs text-slate-400">Intent mode</p>
-          <h3 className="mt-2 text-2xl font-semibold text-white">Adaptive command focus</h3>
+          <p className="text-xs text-[#5f6772]">Intent mode</p>
+          <h3 className="mt-2 text-2xl font-semibold text-[#11161a]">Adaptive command focus</h3>
         </div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-xs text-cyan-100">
+        <span className="rb-chip inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs">
           <Sparkles className="h-4 w-4" />
           {summary.stat}
         </span>
@@ -87,8 +87,8 @@ export function HomeIntentSwitcher({ playerCount, lfgCount, squadCount }: HomeIn
           onClick={() => setMode("solo")}
           className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
             mode === "solo"
-              ? "border-cyan-300/40 bg-cyan-300/12 text-white"
-              : "border-white/10 bg-slate-950/45 text-slate-300 hover:border-cyan-300/25"
+              ? "rb-chip-dark"
+              : "border-black/10 bg-white/70 text-[#3d4650] hover:border-black/20"
           }`}
         >
           Solo grind
@@ -98,8 +98,8 @@ export function HomeIntentSwitcher({ playerCount, lfgCount, squadCount }: HomeIn
           onClick={() => setMode("duo")}
           className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
             mode === "duo"
-              ? "border-cyan-300/40 bg-cyan-300/12 text-white"
-              : "border-white/10 bg-slate-950/45 text-slate-300 hover:border-cyan-300/25"
+              ? "rb-chip-dark"
+              : "border-black/10 bg-white/70 text-[#3d4650] hover:border-black/20"
           }`}
         >
           Duo queue
@@ -109,33 +109,33 @@ export function HomeIntentSwitcher({ playerCount, lfgCount, squadCount }: HomeIn
           onClick={() => setMode("squad")}
           className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
             mode === "squad"
-              ? "border-cyan-300/40 bg-cyan-300/12 text-white"
-              : "border-white/10 bg-slate-950/45 text-slate-300 hover:border-cyan-300/25"
+              ? "rb-chip-dark"
+              : "border-black/10 bg-white/70 text-[#3d4650] hover:border-black/20"
           }`}
         >
           Full squad
         </button>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-        <p className="flex items-center gap-2 text-sm font-semibold text-white">
-          <Crosshair className="h-4 w-4 text-cyan-100" />
+      <div className="rounded-2xl border border-black/10 bg-white/75 p-4">
+        <p className="flex items-center gap-2 text-sm font-semibold text-[#12161a]">
+          <Crosshair className="h-4 w-4 text-[#12161a]" />
           {summary.title}
         </p>
-        <p className="mt-2 text-sm leading-7 text-slate-300">{summary.body}</p>
+        <p className="mt-2 text-sm leading-7 text-[#3d4650]">{summary.body}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href={summary.primaryHref}
-            className="rounded-full bg-cyan-300 px-4 py-2 text-xs font-semibold text-slate-950 transition hover:bg-cyan-200"
+            className="rb-chip-dark rounded-full px-4 py-2 text-xs font-semibold"
           >
             {summary.primaryLabel}
           </Link>
           <Link
             href={summary.secondaryHref}
-            className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"
+            className="inline-flex items-center gap-1 rounded-full border border-black/15 bg-white px-4 py-2 text-xs font-medium text-[#11161a] transition hover:border-black/25"
           >
             {summary.secondaryLabel}
-            <Users className="h-3.5 w-3.5 text-cyan-100" />
+            <Users className="h-3.5 w-3.5 text-[#11161a]" />
           </Link>
         </div>
       </div>

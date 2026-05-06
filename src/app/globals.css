@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0d0f11;
-  --foreground: #f6f7f4;
-  --surface: #171a1d;
-  --surface-2: #1f2429;
-  --surface-3: #272d33;
-  --accent: #7f9f6a;
-  --accent-olive: #a5b67b;
-  --accent-purple: #8975a8;
-  --accent-gold: #c7a56a;
+  --background: #dfe3e8;
+  --foreground: #111316;
+  --surface: #f4f5f7;
+  --surface-2: #eaedf1;
+  --surface-3: #e3e7eb;
+  --accent: #111316;
+  --accent-cyan: #111316;
+  --accent-olive: #7f9f6a;
+  --accent-purple: #8d7da6;
+  --accent-gold: #c6a46f;
   --accent-mint: #7ab896;
-  --success: #7ed39f;
-  --danger: #d17d80;
+  --success: #5ba67e;
+  --danger: #bc6468;
 }
 
 @theme inline {
@@ -80,35 +81,41 @@ textarea {
 }
 
 ::selection {
-  background: rgba(127, 159, 106, 0.35);
-  color: var(--foreground);
+  background: rgba(17, 19, 22, 0.14);
+  color: #0d0f11;
 }
 
-.rb-surface {
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 46px rgba(0, 0, 0, 0.32);
-  backdrop-filter: blur(16px);
+.rb-shell {
+  border: 1px solid rgba(17, 19, 22, 0.08);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.46));
+  box-shadow: 0 24px 54px rgba(18, 23, 29, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
 }
 
-.rb-surface-strong {
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 22px 54px rgba(0, 0, 0, 0.38);
-  backdrop-filter: blur(18px);
+.rb-panel {
+  border: 1px solid rgba(17, 19, 22, 0.08);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.52));
+  box-shadow: 0 18px 42px rgba(14, 19, 24, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
 }
 
 .rb-gradient-text {
-  background: linear-gradient(130deg, #f8f9f5 0%, #d8dfc4 46%, #cab386 100%);
+  background: linear-gradient(130deg, #101317 0%, #2a3037 46%, #58626f 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 .rb-chip {
-  border: 1px solid rgba(165, 182, 123, 0.28);
-  background: rgba(127, 159, 106, 0.14);
-  color: #dce8c7;
+  border: 1px solid rgba(17, 19, 22, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: #20252b;
+}
+
+.rb-chip-dark {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #0f1114;
+  color: #f4f6f9;
 }
 
 @keyframes rbAmbientDrift {
@@ -125,16 +132,16 @@ textarea {
 
 html[data-rb-immersive="on"] body {
   background-image:
-    radial-gradient(circle at 12% -6%, rgba(54, 224, 255, 0.22), transparent 34%),
-    radial-gradient(circle at 88% -2%, rgba(255, 200, 87, 0.18), transparent 32%),
-    linear-gradient(180deg, #050e1c 0%, #081528 54%, #030913 100%);
+    radial-gradient(circle at 12% -6%, rgba(127, 159, 106, 0.22), transparent 34%),
+    radial-gradient(circle at 88% -2%, rgba(141, 125, 166, 0.2), transparent 32%),
+    linear-gradient(180deg, #d7dce3 0%, #dce1e8 54%, #d6dae1 100%);
   background-attachment: fixed;
   animation: rbAmbientDrift 18s ease-in-out infinite;
 }
 
 html[data-rb-immersive="on"] section > article {
-  border-color: rgba(124, 228, 255, 0.22);
-  box-shadow: 0 18px 50px rgba(3, 10, 22, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-color: rgba(17, 19, 22, 0.12);
+  box-shadow: 0 18px 50px rgba(28, 35, 43, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
 .grid-overlay {

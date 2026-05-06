@@ -113,30 +113,30 @@ export function SessionPilot({
 
   return (
     <section className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-      <article className="rounded-[28px] border border-white/10 bg-[linear-gradient(145deg,rgba(45,168,255,0.16),rgba(8,17,32,0.92))] p-6">
+      <article className="rb-panel rounded-[28px] p-6">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs text-cyan-100/85">Session pilot</p>
-            <h3 className="mt-2 text-2xl font-semibold text-white">
+            <p className="text-xs text-[#5f6772]">Session pilot</p>
+            <h3 className="mt-2 text-2xl font-semibold text-[#12161a]">
               {username ? `${username}, shape tonight\'s runbook` : "Shape your runbook"}
             </h3>
-            <p className="mt-2 text-sm text-slate-200">
+            <p className="mt-2 text-sm text-[#3f4852]">
               Use focus controls to generate a practical action path from your current recommendations.
             </p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-xs text-cyan-100">
+          <span className="rb-chip-dark inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs">
             <Compass className="h-4 w-4" />
             {formatLength(state.length)} plan
           </span>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="rounded-2xl border border-white/10 bg-slate-950/45 p-3 text-xs text-slate-300">
+          <label className="rounded-2xl border border-black/10 bg-white/70 p-3 text-xs text-[#4a5561]">
             Focus
             <select
               value={state.focus}
               onChange={(event) => setState((current) => ({ ...current, focus: event.target.value as FocusMode }))}
-              className="mt-2 w-full rounded-lg border border-white/15 bg-slate-950/60 px-3 py-2 text-sm text-white"
+              className="mt-2 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-[#11151a]"
             >
               <option value="competitive">Competitive</option>
               <option value="balanced">Balanced</option>
@@ -144,12 +144,12 @@ export function SessionPilot({
             </select>
           </label>
 
-          <label className="rounded-2xl border border-white/10 bg-slate-950/45 p-3 text-xs text-slate-300">
+          <label className="rounded-2xl border border-black/10 bg-white/70 p-3 text-xs text-[#4a5561]">
             Session length
             <select
               value={state.length}
               onChange={(event) => setState((current) => ({ ...current, length: event.target.value as SessionLength }))}
-              className="mt-2 w-full rounded-lg border border-white/15 bg-slate-950/60 px-3 py-2 text-sm text-white"
+              className="mt-2 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-[#11151a]"
             >
               <option value="45">45 min warm-up</option>
               <option value="90">90 min core session</option>
@@ -157,7 +157,7 @@ export function SessionPilot({
             </select>
           </label>
 
-          <label className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-950/45 p-3 text-xs text-slate-300">
+          <label className="flex items-center justify-between rounded-2xl border border-black/10 bg-white/70 p-3 text-xs text-[#4a5561]">
             Cinematic mode
             <button
               type="button"
@@ -166,12 +166,12 @@ export function SessionPilot({
               onClick={() => setState((current) => ({ ...current, immersive: !current.immersive }))}
               className={`relative inline-flex h-7 w-12 items-center rounded-full border transition ${
                 state.immersive
-                  ? "border-cyan-200/50 bg-cyan-300/30"
-                  : "border-white/20 bg-slate-950/80"
+                  ? "border-black/35 bg-black/80"
+                  : "border-black/20 bg-white"
               }`}
             >
               <span
-                className={`h-5 w-5 rounded-full bg-white transition ${
+                className={`h-5 w-5 rounded-full bg-[#dfe3e8] transition ${
                   state.immersive ? "translate-x-6" : "translate-x-1"
                 }`}
               />
@@ -179,14 +179,14 @@ export function SessionPilot({
           </label>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-white/10 bg-slate-950/55 p-4">
-          <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-            <Timer className="h-4 w-4 text-cyan-100" />
+        <div className="mt-5 rounded-2xl border border-black/10 bg-white/72 p-4">
+          <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-[#11161a]">
+            <Timer className="h-4 w-4 text-[#11161a]" />
             Suggested run order
           </p>
-          <ol className="space-y-2 text-sm text-slate-200">
+          <ol className="space-y-2 text-sm text-[#3e4751]">
             {plan.map((line) => (
-              <li key={line} className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+              <li key={line} className="rounded-xl border border-black/10 bg-white px-3 py-2">
                 {line}
               </li>
             ))}
@@ -196,47 +196,47 @@ export function SessionPilot({
         <div className="mt-5 flex flex-wrap gap-3">
           <Link
             href="/lfg"
-            className="rounded-full bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+            className="rb-chip-dark rounded-full px-4 py-2 text-sm font-semibold"
           >
             Launch LFG board
           </Link>
           <Link
             href="/squads"
-            className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"
+            className="rounded-full border border-black/15 bg-white/80 px-4 py-2 text-sm font-medium text-[#11161a] transition hover:border-black/25"
           >
             Open squads
           </Link>
           <Link
             href="/settings"
-            className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20"
+            className="rounded-full border border-black/15 bg-white/80 px-4 py-2 text-sm font-medium text-[#11161a] transition hover:border-black/25"
           >
             Tune preferences
           </Link>
         </div>
       </article>
 
-      <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+      <article className="rb-panel rounded-[28px] p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Context lane</h3>
-          <Waves className="h-5 w-5 text-cyan-200" />
+          <h3 className="text-lg font-semibold text-[#101418]">Context lane</h3>
+          <Waves className="h-5 w-5 text-[#101418]" />
         </div>
-        <div className="space-y-3 text-sm text-slate-200">
-          <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-4">
-            <p className="text-xs text-slate-400">Region priority</p>
-            <p className="mt-1 font-medium text-white">{regionHint ?? "Set your region in Settings"}</p>
+        <div className="space-y-3 text-sm text-[#3e4751]">
+          <div className="rounded-2xl border border-black/10 bg-white/75 p-4">
+            <p className="text-xs text-[#5f6772]">Region priority</p>
+            <p className="mt-1 font-medium text-[#12161a]">{regionHint ?? "Set your region in Settings"}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-4">
-            <p className="text-xs text-slate-400">Timezone anchor</p>
-            <p className="mt-1 font-medium text-white">{timezoneHint ?? "Set your timezone for better overlap"}</p>
+          <div className="rounded-2xl border border-black/10 bg-white/75 p-4">
+            <p className="text-xs text-[#5f6772]">Timezone anchor</p>
+            <p className="mt-1 font-medium text-[#12161a]">{timezoneHint ?? "Set your timezone for better overlap"}</p>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-4">
-            <p className="text-xs text-slate-400">Current recommendation volume</p>
-            <p className="mt-1 inline-flex items-center gap-2 font-medium text-white">
-              <Sparkles className="h-4 w-4 text-cyan-100" />
+          <div className="rounded-2xl border border-black/10 bg-white/75 p-4">
+            <p className="text-xs text-[#5f6772]">Current recommendation volume</p>
+            <p className="mt-1 inline-flex items-center gap-2 font-medium text-[#12161a]">
+              <Sparkles className="h-4 w-4 text-[#12161a]" />
               {recommendedCount} players, {lfgCount} LFG opportunities, {squadCount} squads
             </p>
           </div>
-          <div className="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4 text-emerald-100">
+          <div className="rounded-2xl border border-black/10 bg-[#111316] p-4 text-[#edf0f4]">
             <p className="inline-flex items-start gap-2">
               <MonitorPlay className="mt-0.5 h-4 w-4" />
               Cinematic mode persists on this device. Toggle it when you want a full-screen, high-atmosphere session.

@@ -63,7 +63,7 @@ export default async function Home() {
               ) : null}
               <Link
                 href="/profile/ghosttrace"
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-full border border-black/15 bg-white/80 px-5 py-3 text-sm font-medium text-[#12161a] transition hover:border-black/25"
               >
                 Review sample profile
                 <Users className="h-4 w-4" />
@@ -110,31 +110,31 @@ export default async function Home() {
         <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
           <FirstSessionChecklist username={signedInUsername} />
 
-          <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <article className="rb-panel rounded-[28px] p-6">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-400">Trust transparency</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">Why these recommendations appear first</h3>
+                <p className="text-xs text-[#5f6772]">Trust transparency</p>
+                <h3 className="mt-2 text-2xl font-semibold text-[#11161a]">Why these recommendations appear first</h3>
               </div>
-              <ShieldCheck className="h-5 w-5 text-cyan-200" />
+              <ShieldCheck className="h-5 w-5 text-[#11161a]" />
             </div>
 
             <div className="space-y-3">
-              <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-                <p className="text-sm font-medium text-white">Role and rank compatibility</p>
-                <p className="mt-1 text-xs leading-6 text-slate-300">
+              <div className="rounded-2xl border border-black/10 bg-white/75 p-4">
+                <p className="text-sm font-medium text-[#11161a]">Role and rank compatibility</p>
+                <p className="mt-1 text-xs leading-6 text-[#3d4650]">
                   We prioritize players whose role demand and rank window overlap your likely session needs.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-                <p className="text-sm font-medium text-white">Schedule and communication fit</p>
-                <p className="mt-1 text-xs leading-6 text-slate-300">
+              <div className="rounded-2xl border border-black/10 bg-white/75 p-4">
+                <p className="text-sm font-medium text-[#11161a]">Schedule and communication fit</p>
+                <p className="mt-1 text-xs leading-6 text-[#3d4650]">
                   Time overlap and mic preferences are weighted before you spend time sending invites.
                 </p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
-                <p className="text-sm font-medium text-white">Reputation quality threshold</p>
-                <p className="mt-1 text-xs leading-6 text-slate-300">
+              <div className="rounded-2xl border border-black/10 bg-white/75 p-4">
+                <p className="text-sm font-medium text-[#11161a]">Reputation quality threshold</p>
+                <p className="mt-1 text-xs leading-6 text-[#3d4650]">
                   Public badges are shown only after minimum reviewer thresholds to reduce brigading noise.
                 </p>
               </div>
@@ -143,13 +143,13 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-6 2xl:grid-cols-[1fr_1fr_0.85fr]">
-          <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <article className="rb-panel rounded-[28px] p-6">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-400">Recommended teammates</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">Top fits for this session</h3>
+                <p className="text-xs text-[#5f6772]">Recommended teammates</p>
+                <h3 className="mt-2 text-2xl font-semibold text-[#11161a]">Top fits for this session</h3>
               </div>
-              <BadgeCheck className="h-5 w-5 text-cyan-200" />
+              <BadgeCheck className="h-5 w-5 text-[#11161a]" />
             </div>
             <div className="space-y-4">
               {recommendedPlayers.length === 0 ? (
@@ -161,23 +161,23 @@ export default async function Home() {
                 <Link
                   key={player.username}
                   href={`/profile/${player.username}`}
-                  className="block rounded-[24px] border border-white/10 bg-slate-950/45 p-5 transition hover:border-cyan-300/30 hover:bg-slate-950/70"
+                  className="block rounded-[24px] border border-black/10 bg-white/82 p-5 transition hover:border-black/20 hover:bg-white"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h4 className="text-lg font-semibold text-white">{player.displayName}</h4>
-                      <p className="mt-1 text-sm text-slate-400">
+                      <h4 className="text-lg font-semibold text-[#11161a]">{player.displayName}</h4>
+                      <p className="mt-1 text-sm text-[#5f6772]">
                         {player.rank} • {player.role} • {player.region}
                       </p>
                     </div>
-                    <div className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-semibold text-cyan-100">
+                    <div className="rb-chip-dark rounded-full px-3 py-1 text-sm font-semibold">
                       {player.synergy}% fit
                     </div>
                   </div>
-                  <p className="mt-3 text-sm leading-7 text-slate-300">{player.tagline}</p>
+                  <p className="mt-3 text-sm leading-7 text-[#3d4650]">{player.tagline}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {player.reputation.map((tag) => (
-                      <span key={tag} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                      <span key={tag} className="rounded-full border border-black/10 bg-[#eef1f5] px-3 py-1 text-xs text-[#35404c]">
                         {tag}
                       </span>
                     ))}
@@ -185,18 +185,18 @@ export default async function Home() {
                 </Link>
               ))}
             </div>
-            <Link href="/profile/ghosttrace" className="mt-4 inline-flex text-sm font-medium text-cyan-100 transition hover:text-cyan-50">
+            <Link href="/profile/ghosttrace" className="mt-4 inline-flex text-sm font-medium text-[#1a2129] transition hover:text-black">
               View all recommended players
             </Link>
           </article>
 
-          <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <article className="rb-panel rounded-[28px] p-6">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-400">Live LFG board</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">Fast join opportunities</h3>
+                <p className="text-xs text-[#5f6772]">Live LFG board</p>
+                <h3 className="mt-2 text-2xl font-semibold text-[#11161a]">Fast join opportunities</h3>
               </div>
-              <Gamepad2 className="h-5 w-5 text-cyan-200" />
+              <Gamepad2 className="h-5 w-5 text-[#11161a]" />
             </div>
             <div className="space-y-4">
               {lfgPosts.length === 0 ? (
@@ -205,22 +205,22 @@ export default async function Home() {
                 </div>
               ) : null}
               {lfgPosts.slice(0, 3).map((post) => (
-                <div key={post.title} className="rounded-[24px] border border-white/10 bg-slate-950/45 p-5">
+                <div key={post.title} className="rounded-[24px] border border-black/10 bg-white/82 p-5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h4 className="text-base font-semibold text-white">{post.title}</h4>
-                    <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs text-emerald-100">
+                    <h4 className="text-base font-semibold text-[#11161a]">{post.title}</h4>
+                    <span className="rounded-full border border-emerald-300/40 bg-emerald-300/16 px-3 py-1 text-xs text-emerald-900">
                       {post.openSpots} spots
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-400">
+                  <p className="mt-2 text-sm text-[#5f6772]">
                     {post.game} • {post.region} • {post.rank}
                   </p>
-                  <p className="mt-3 text-sm text-slate-300">
+                  <p className="mt-3 text-sm text-[#3d4650]">
                     {post.schedule} • {post.tone}
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {post.roles.map((role) => (
-                      <span key={role} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                      <span key={role} className="rounded-full border border-black/10 bg-[#eef1f5] px-3 py-1 text-xs text-[#35404c]">
                         {role}
                       </span>
                     ))}
@@ -228,7 +228,7 @@ export default async function Home() {
                 </div>
               ))}
             </div>
-            <Link href="/lfg" className="mt-4 inline-flex text-sm font-medium text-cyan-100 transition hover:text-cyan-50">
+            <Link href="/lfg" className="mt-4 inline-flex text-sm font-medium text-[#1a2129] transition hover:text-black">
               Open full LFG board
             </Link>
           </article>
@@ -237,13 +237,13 @@ export default async function Home() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1fr_0.92fr]">
-          <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <article className="rb-panel rounded-[28px] p-6">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-400">Featured clips</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">Quick proof before invite</h3>
+                <p className="text-xs text-[#5f6772]">Featured clips</p>
+                <h3 className="mt-2 text-2xl font-semibold text-[#11161a]">Quick proof before invite</h3>
               </div>
-              <Video className="h-5 w-5 text-cyan-200" />
+              <Video className="h-5 w-5 text-[#11161a]" />
             </div>
             <div className="grid gap-4 lg:grid-cols-3">
               {featuredClips.length === 0 ? (
@@ -252,16 +252,16 @@ export default async function Home() {
                 </div>
               ) : null}
               {featuredClips.slice(0, 3).map((clip) => (
-                <article key={clip.title} className="overflow-hidden rounded-[24px] border border-white/10 bg-slate-950/50">
+                <article key={clip.title} className="overflow-hidden rounded-[24px] border border-black/10 bg-white/85">
                   <div className="flex aspect-video items-end bg-[linear-gradient(135deg,rgba(45,168,255,0.35),rgba(139,92,255,0.25),rgba(5,11,20,0.65))] p-4">
                     <span className="rounded-full border border-white/15 bg-black/25 px-3 py-1 text-xs text-white">{clip.mood}</span>
                   </div>
                   <div className="p-4">
-                    <h4 className="text-base font-semibold text-white">{clip.title}</h4>
-                    <p className="mt-2 text-sm text-slate-400">
+                    <h4 className="text-base font-semibold text-[#11161a]">{clip.title}</h4>
+                    <p className="mt-2 text-sm text-[#5f6772]">
                       {clip.player} • {clip.game}
                     </p>
-                    <div className="mt-3 flex items-center justify-between text-xs text-slate-300">
+                    <div className="mt-3 flex items-center justify-between text-xs text-[#3d4650]">
                       <span>{clip.duration}</span>
                       <span>{clip.views} views</span>
                     </div>
@@ -269,18 +269,18 @@ export default async function Home() {
                 </article>
               ))}
             </div>
-            <Link href="/clips" className="mt-4 inline-flex text-sm font-medium text-cyan-100 transition hover:text-cyan-50">
+            <Link href="/clips" className="mt-4 inline-flex text-sm font-medium text-[#1a2129] transition hover:text-black">
               Browse all clips
             </Link>
           </article>
 
-          <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <article className="rb-panel rounded-[28px] p-6">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <p className="text-xs text-slate-400">Persistent squads</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">Stable teams worth joining</h3>
+                <p className="text-xs text-[#5f6772]">Persistent squads</p>
+                <h3 className="mt-2 text-2xl font-semibold text-[#11161a]">Stable teams worth joining</h3>
               </div>
-              <Stars className="h-5 w-5 text-cyan-200" />
+              <Stars className="h-5 w-5 text-[#11161a]" />
             </div>
             <div className="space-y-4">
               {squads.length === 0 ? (
@@ -289,22 +289,22 @@ export default async function Home() {
                 </div>
               ) : null}
               {squads.slice(0, 2).map((squad) => (
-                <article key={squad.name} className="rounded-[24px] border border-white/10 bg-slate-950/45 p-5">
+                <article key={squad.name} className="rounded-[24px] border border-black/10 bg-white/82 p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <h4 className="text-lg font-semibold text-white">{squad.name}</h4>
-                      <p className="mt-1 text-sm text-slate-400">
+                      <h4 className="text-lg font-semibold text-[#11161a]">{squad.name}</h4>
+                      <p className="mt-1 text-sm text-[#5f6772]">
                         {squad.game} • {squad.members} members • {squad.status}
                       </p>
                     </div>
-                    <div className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-semibold text-cyan-100">
+                    <div className="rb-chip-dark rounded-full px-3 py-1 text-sm font-semibold">
                       {squad.synergy}% synergy
                     </div>
                   </div>
-                  <p className="mt-3 text-sm text-slate-300">{squad.activity}</p>
+                  <p className="mt-3 text-sm text-[#3d4650]">{squad.activity}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     {squad.openRoles.map((role) => (
-                      <span key={role} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                      <span key={role} className="rounded-full border border-black/10 bg-[#eef1f5] px-3 py-1 text-xs text-[#35404c]">
                         {role}
                       </span>
                     ))}
@@ -312,7 +312,7 @@ export default async function Home() {
                 </article>
               ))}
             </div>
-            <Link href="/squads" className="mt-4 inline-flex text-sm font-medium text-cyan-100 transition hover:text-cyan-50">
+            <Link href="/squads" className="mt-4 inline-flex text-sm font-medium text-[#1a2129] transition hover:text-black">
               View all squads
             </Link>
           </article>
