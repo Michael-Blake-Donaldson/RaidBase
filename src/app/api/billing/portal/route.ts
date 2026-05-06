@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
+import { getAppBaseUrl } from "@/lib/env";
 import { getStripe } from "@/lib/stripe";
 
 export async function POST() {
@@ -12,6 +13,7 @@ export async function POST() {
   }
 
   const stripe = getStripe();
+  const appBaseUrl = getAppBaseUrl();
   if (!stripe) {
     return NextResponse.json({ error: "Billing is not configured." }, { status: 503 });
   }
@@ -23,7 +25,7 @@ export async function POST() {
 
   const portal = await stripe.billingPortal.sessions.create({
     customer: subscription.stripeCustomerId,
-    return_url: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/settings`,
+    return_url: `${appBaseUrl}/settings`,
   });
 
   return NextResponse.json({ url: portal.url });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
 import { db } from "@/lib/db";
+import { getStripeEnv } from "@/lib/env";
 import { getStripe } from "@/lib/stripe";
 
 function mapSubscriptionStatus(status: Stripe.Subscription.Status) {
@@ -21,7 +22,7 @@ function mapSubscriptionStatus(status: Stripe.Subscription.Status) {
 
 export async function POST(request: Request) {
   const stripe = getStripe();
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const { webhookSecret } = getStripeEnv();
 
   if (!stripe || !webhookSecret) {
     return NextResponse.json({ error: "Billing is not configured." }, { status: 503 });

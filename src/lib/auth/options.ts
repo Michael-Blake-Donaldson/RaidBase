@@ -6,6 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { getAuthSecret } from "@/lib/env";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -14,9 +15,7 @@ const credentialsSchema = z.object({
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
-  secret:
-    process.env.NEXTAUTH_SECRET ??
-    (process.env.NODE_ENV === "production" ? undefined : "raidbase-dev-only-secret"),
+  secret: getAuthSecret(),
   session: {
     strategy: "jwt",
   },

@@ -25,6 +25,7 @@ jobs:
       - name: Setup environment
         run: |
           echo 'DATABASE_URL="file:./dev.db"' > .env
+          echo 'STRICT_ENV_VALIDATION="true"' >> .env
           echo 'NEXTAUTH_SECRET="ci-nextauth-secret"' >> .env
           echo 'NEXTAUTH_URL="http://127.0.0.1:3000"' >> .env
 

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
+import { getAppBaseUrl, getStripeEnv } from "@/lib/env";
 import { getStripe } from "@/lib/stripe";
 
 export async function POST() {
@@ -12,7 +13,8 @@ export async function POST() {
   }
 
   const stripe = getStripe();
-  const proPriceId = process.env.STRIPE_PRO_PRICE_ID;
+  const { proPriceId } = getStripeEnv();
+  const appBaseUrl = getAppBaseUrl();
 
   if (!stripe || !proPriceId) {
     return NextResponse.json({ error: "Billing is not configured." }, { status: 503 });
@@ -46,8 +48,8 @@ export async function POST() {
     mode: "subscription",
     customer: customerId,
     line_items: [{ price: proPriceId, quantity: 1 }],
-    success_url: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/settings?billing=success`,
-    cancel_url: `${process.env.NEXTAUTH_URL ?? "http://localhost:3000"}/settings?billing=cancelled`,
+    success_url: `${appBaseUrl}/settings?billing=success`,
+    cancel_url: `${appBaseUrl}/settings?billing=cancelled`,
   });
 
   return NextResponse.json({ url: checkout.url });
