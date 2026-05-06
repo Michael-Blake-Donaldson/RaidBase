@@ -153,7 +153,7 @@ export default async function Home() {
             </div>
             <div className="space-y-4">
               {recommendedPlayers.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-slate-950/35 p-5 text-sm text-slate-300">
+                <div className="rounded-2xl border border-dashed border-black/15 bg-white/82 p-5 text-sm text-[#44505c]">
                   No fit suggestions yet. Complete role preferences to get recommendations.
                 </div>
               ) : null}
@@ -200,7 +200,7 @@ export default async function Home() {
             </div>
             <div className="space-y-4">
               {lfgPosts.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-slate-950/35 p-5 text-sm text-slate-300">
+                <div className="rounded-2xl border border-dashed border-black/15 bg-white/82 p-5 text-sm text-[#44505c]">
                   No open posts right now. Check back in a minute or widen region filters.
                 </div>
               ) : null}
@@ -247,14 +247,14 @@ export default async function Home() {
             </div>
             <div className="grid gap-4 lg:grid-cols-3">
               {featuredClips.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-slate-950/35 p-5 text-sm text-slate-300 lg:col-span-3">
+                <div className="rounded-2xl border border-dashed border-black/15 bg-white/82 p-5 text-sm text-[#44505c] lg:col-span-3">
                   No clips uploaded yet.
                 </div>
               ) : null}
               {featuredClips.slice(0, 3).map((clip) => (
                 <article key={clip.title} className="overflow-hidden rounded-[24px] border border-black/10 bg-white/85">
                   <div className="flex aspect-video items-end bg-[linear-gradient(135deg,rgba(45,168,255,0.35),rgba(139,92,255,0.25),rgba(5,11,20,0.65))] p-4">
-                    <span className="rounded-full border border-white/15 bg-black/25 px-3 py-1 text-xs text-white">{clip.mood}</span>
+                    <span className="rounded-full border border-black/15 bg-white/88 px-3 py-1 text-xs font-semibold text-[#1a2129]">{clip.mood}</span>
                   </div>
                   <div className="p-4">
                     <h4 className="text-base font-semibold text-[#11161a]">{clip.title}</h4>
@@ -284,7 +284,7 @@ export default async function Home() {
             </div>
             <div className="space-y-4">
               {squads.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-slate-950/35 p-5 text-sm text-slate-300">
+                <div className="rounded-2xl border border-dashed border-black/15 bg-white/82 p-5 text-sm text-[#44505c]">
                   No squads are currently recruiting.
                 </div>
               ) : null}
