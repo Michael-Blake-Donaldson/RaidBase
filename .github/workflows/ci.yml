@@ -25,6 +25,8 @@ jobs:
       - name: Setup environment
         run: |
           echo 'DATABASE_URL="file:./dev.db"' > .env
+          echo 'NEXTAUTH_SECRET="ci-nextauth-secret"' >> .env
+          echo 'NEXTAUTH_URL="http://127.0.0.1:3000"' >> .env
 
       - name: Generate Prisma client
         run: npm run prisma:generate
@@ -40,3 +42,12 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E smoke tests
+        run: npm run test:e2e
+
+      - name: Performance budget check
+        run: npm run perf:budget

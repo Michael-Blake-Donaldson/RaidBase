@@ -3,6 +3,7 @@ import type { Viewport } from "next";
 import { Inter, Orbitron, Sora } from "next/font/google";
 import "./globals.css";
 
+import { WebVitalsReporter } from "@/components/web-vitals-reporter";
 import { siteConfig } from "@/lib/site-config";
 
 const inter = Inter({
@@ -68,6 +69,7 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
+        <WebVitalsReporter />
       </body>
     </html>
   );
