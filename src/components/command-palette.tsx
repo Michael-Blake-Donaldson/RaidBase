@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { Command, Compass, Gamepad2, Layers, Search, Users, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type CommandPaletteProps = {
   navItems: Array<{
@@ -49,18 +49,22 @@ function getImmersiveState() {
 }
 
 export function CommandPalette({ navItems }: CommandPaletteProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [immersive, setImmersive] = useState(() => getImmersiveState());
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const closePalette = useCallback(() => {
     setOpen(false);
     setQuery("");
+    setSelectedIndex(0);
   }, []);
 
   const openPalette = useCallback(() => {
     setOpen(true);
     setQuery("");
+    setSelectedIndex(0);
   }, []);
 
   useEffect(() => {
@@ -147,6 +151,43 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
     });
   }, [actions, query]);
 
+  const runAction = useCallback(
+    (action: CommandAction) => {
+      if (action.href) {
+        closePalette();
+        router.push(action.href);
+        return;
+      }
+
+      action.onRun?.();
+    },
+    [closePalette, router],
+  );
+
+  const onPaletteKeyDown = useCallback(
+    (event: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (filteredActions.length === 0) {
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setSelectedIndex((current) => (current + 1) % filteredActions.length);
+      }
+
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedIndex((current) => (current - 1 + filteredActions.length) % filteredActions.length);
+      }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        runAction(filteredActions[selectedIndex] ?? filteredActions[0]);
+      }
+    },
+    [filteredActions, runAction, selectedIndex],
+  );
+
   return (
     <>
       <button
@@ -162,20 +203,33 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/65 p-4 pt-[12vh] backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-2xl border border-cyan-300/25 bg-slate-950/94 shadow-[0_30px_80px_rgba(1,8,18,0.6)]">
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/65 p-4 pt-[12vh] backdrop-blur-sm"
+          onClick={closePalette}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Command palette"
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={onPaletteKeyDown}
+            className="w-full max-w-2xl rounded-2xl border border-cyan-300/25 bg-slate-950/94 shadow-[0_30px_80px_rgba(1,8,18,0.6)]"
+          >
             <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
               <Search className="h-4 w-4 text-cyan-100" aria-hidden />
               <input
                 autoFocus
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setSelectedIndex(0);
+                }}
                 placeholder="Search destinations and quick actions..."
                 className="w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
               />
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={closePalette}
                 className="rounded-md border border-white/15 bg-white/5 p-1 text-slate-200 transition hover:text-white"
                 aria-label="Close command palette"
               >
@@ -191,33 +245,20 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
               ) : null}
 
               <div className="space-y-2">
-                {filteredActions.map((action) => {
-                  if (action.href) {
-                    return (
-                      <Link
-                        key={action.id}
-                        href={action.href}
-                        onClick={closePalette}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white transition hover:border-cyan-300/30 hover:bg-cyan-300/10"
-                      >
-                        <div className="flex items-center gap-3">
-                          <ActionIcon icon={action.icon} />
-                          <div>
-                            <p>{action.label}</p>
-                            <p className="text-xs text-slate-400">{action.hint}</p>
-                          </div>
-                        </div>
-                        <span className="text-xs text-slate-400">Enter</span>
-                      </Link>
-                    );
-                  }
+                {filteredActions.map((action, index) => {
+                  const selected = index === selectedIndex;
 
                   return (
                     <button
                       key={action.id}
                       type="button"
-                      onClick={action.onRun}
-                      className="flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3 text-left text-sm text-white transition hover:border-cyan-300/30 hover:bg-cyan-300/10"
+                      onMouseEnter={() => setSelectedIndex(index)}
+                      onClick={() => runAction(action)}
+                      className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm text-white transition ${
+                        selected
+                          ? "border-cyan-300/45 bg-cyan-300/14"
+                          : "border-white/10 bg-white/5 hover:border-cyan-300/30 hover:bg-cyan-300/10"
+                      }`}
                     >
                       <div className="flex items-center gap-3">
                         <ActionIcon icon={action.icon} />
@@ -226,7 +267,7 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
                           <p className="text-xs text-slate-400">{action.hint}</p>
                         </div>
                       </div>
-                      <span className="text-xs text-slate-400">Run</span>
+                      <span className="text-xs text-slate-400">Enter</span>
                     </button>
                   );
                 })}

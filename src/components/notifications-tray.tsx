@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, CheckCircle2, Clock3, X } from "lucide-react";
 
 import type { NotificationItem } from "@/lib/site-data";
@@ -79,6 +79,7 @@ function priorityBadge(priority: NotificationItem["priority"]) {
 export function NotificationsTray({ items }: NotificationsTrayProps) {
   const [open, setOpen] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const [states, setStates] = useState<NotificationStateMap>(() => {
     if (typeof window === "undefined") {
       return {};
@@ -110,6 +111,37 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
       window.clearInterval(intervalId);
     };
   }, []);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const onDocumentClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (!containerRef.current?.contains(target)) {
+        setOpen(false);
+      }
+    };
+
+    const onDocumentKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onDocumentClick);
+    document.addEventListener("keydown", onDocumentKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", onDocumentClick);
+      document.removeEventListener("keydown", onDocumentKeyDown);
+    };
+  }, [open]);
 
   const activeItems = useMemo(
     () => items.filter((item) => {
@@ -144,7 +176,7 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
   }, [activeItems]);
 
   return (
-    <div className="relative">
+    <div ref={containerRef} className="relative">
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
