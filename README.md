@@ -172,6 +172,9 @@ What is implemented now:
 - User registration API with validation and rate limiting
 - Functional settings page with DB-backed profile updates
 - Settings safety UX with reset-unsaved and undo-last-save actions
+- Interactive LFG board with create-post and request-to-join actions
+- Interactive squads hub with create-squad and join-squad actions
+- Privacy-aware squad membership flow with invite-code enforcement
 - Health check endpoint at `/api/health`
 - Route-level loading and error boundaries for key flows
 - Global application error boundary

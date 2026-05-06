@@ -144,6 +144,7 @@ export async function getSquadsFromDb(): Promise<SquadCard[]> {
   });
 
   return squads.map((squad) => ({
+    id: squad.id,
     name: squad.name,
     game: squad.game.name,
     members: squad.members.length,
@@ -151,6 +152,8 @@ export async function getSquadsFromDb(): Promise<SquadCard[]> {
     synergy: percentile(68 + squad.members.length * 4),
     status: squad.privacy === "PUBLIC" ? "Open recruitment" : "Invite focused",
     activity: "Session and review activity synced",
+    privacy: squad.privacy,
+    inviteCodeRequired: squad.privacy !== "PUBLIC",
   }));
 }
 

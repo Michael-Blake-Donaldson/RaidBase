@@ -41,6 +41,7 @@ export type LfgCard = {
 };
 
 export type SquadCard = {
+  id: string;
   name: string;
   game: string;
   members: number;
@@ -48,6 +49,8 @@ export type SquadCard = {
   synergy: number;
   status: string;
   activity: string;
+  privacy: "PUBLIC" | "PRIVATE" | "INVITE_ONLY";
+  inviteCodeRequired: boolean;
 };
 
 export type ReportCard = {
@@ -196,6 +199,7 @@ export const lfgPosts: LfgCard[] = [
 
 export const squads: SquadCard[] = [
   {
+    id: "seed-squad-1",
     name: "Night Circuit",
     game: "Valorant",
     members: 5,
@@ -203,8 +207,11 @@ export const squads: SquadCard[] = [
     synergy: 94,
     status: "Scrimming now",
     activity: "Won 6 of last 7 ranked sessions",
+    privacy: "INVITE_ONLY",
+    inviteCodeRequired: true,
   },
   {
+    id: "seed-squad-2",
     name: "Orbit Division",
     game: "Destiny 2",
     members: 8,
@@ -212,8 +219,11 @@ export const squads: SquadCard[] = [
     synergy: 89,
     status: "Recruiting for weekly clears",
     activity: "Three repeat-fireteams formed this week",
+    privacy: "PUBLIC",
+    inviteCodeRequired: false,
   },
   {
+    id: "seed-squad-3",
     name: "Static Echo",
     game: "CS2",
     members: 6,
@@ -221,6 +231,8 @@ export const squads: SquadCard[] = [
     synergy: 86,
     status: "Reviewing demos",
     activity: "Average attendance 96% over 30 days",
+    privacy: "PRIVATE",
+    inviteCodeRequired: true,
   },
 ];
 
