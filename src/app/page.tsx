@@ -32,12 +32,12 @@ export default async function Home() {
     >
       <div className="space-y-6">
         <section className="grid gap-6 xl:grid-cols-[1.45fr_0.88fr]">
-          <article className="overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(140deg,rgba(45,168,255,0.16),rgba(8,17,32,0.88))] p-6 lg:p-8">
-            <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/12 px-3 py-1 text-xs font-medium text-cyan-100">
+          <article className="rb-surface-strong overflow-hidden rounded-[28px] p-6 lg:p-8">
+            <p className="rb-chip inline-flex rounded-full px-3 py-1 text-xs font-medium">
               Production-ready UX sprint
             </p>
 
-            <h2 className="mt-4 max-w-3xl font-display text-4xl font-semibold tracking-tight text-white lg:text-6xl">
+            <h2 className="rb-gradient-text mt-4 max-w-3xl font-display text-4xl font-semibold tracking-tight lg:text-6xl">
               Cleaner signal, faster teammate decisions.
             </h2>
 
@@ -48,7 +48,7 @@ export default async function Home() {
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href="/lfg"
-                className="inline-flex items-center gap-2 rounded-full bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+                className="inline-flex items-center gap-2 rounded-full bg-[#a5b67b] px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-[#bbca92]"
               >
                 Open LFG now
                 <ArrowUpRight className="h-4 w-4" />
@@ -56,7 +56,7 @@ export default async function Home() {
               {!signedInUsername ? (
                 <Link
                   href="/auth/sign-in"
-                  className="inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-5 py-3 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20"
+                  className="inline-flex items-center gap-2 rounded-full border border-[#a5b67b]/35 bg-[#7f9f6a]/12 px-5 py-3 text-sm font-medium text-[#dce8c7] transition hover:bg-[#7f9f6a]/20"
                 >
                   Sign in for personalized matches
                 </Link>
@@ -71,20 +71,20 @@ export default async function Home() {
             </div>
           </article>
 
-          <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <article className="rb-surface rounded-[28px] p-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">Live platform snapshot</h3>
-              <span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100">
+              <span className="rounded-full border border-[#a5d2a3]/30 bg-[#7ab896]/10 px-2.5 py-1 text-xs font-medium text-[#d7efcf]">
                 Updated now
               </span>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               {platformStats.slice(0, 3).map((stat) => (
-                <article key={stat.label} className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                <article key={stat.label} className="rounded-2xl border border-white/10 bg-black/25 p-4">
                   <p className="text-xs text-slate-400">{stat.label}</p>
                   <div className="mt-2 flex items-end justify-between gap-3">
                     <p className="text-2xl font-semibold text-white">{stat.value}</p>
-                    <span className="text-xs text-cyan-100">{stat.delta}</span>
+                    <span className="text-xs text-[#d8debb]">{stat.delta}</span>
                   </div>
                 </article>
               ))}

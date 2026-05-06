@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07111f;
-  --foreground: #f3f7ff;
-  --surface: #13243a;
-  --surface-2: #0e1b2d;
-  --accent: #2da8ff;
-  --accent-cyan: #36e0ff;
-  --accent-violet: #8b5cff;
-  --success: #3dffae;
-  --danger: #ff4f6d;
-  --gold: #ffc857;
+  --background: #0d0f11;
+  --foreground: #f6f7f4;
+  --surface: #171a1d;
+  --surface-2: #1f2429;
+  --surface-3: #272d33;
+  --accent: #7f9f6a;
+  --accent-olive: #a5b67b;
+  --accent-purple: #8975a8;
+  --accent-gold: #c7a56a;
+  --accent-mint: #7ab896;
+  --success: #7ed39f;
+  --danger: #d17d80;
 }
 
 @theme inline {
@@ -78,8 +80,35 @@ textarea {
 }
 
 ::selection {
-  background: rgba(54, 224, 255, 0.22);
+  background: rgba(127, 159, 106, 0.35);
   color: var(--foreground);
+}
+
+.rb-surface {
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 46px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(16px);
+}
+
+.rb-surface-strong {
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 22px 54px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(18px);
+}
+
+.rb-gradient-text {
+  background: linear-gradient(130deg, #f8f9f5 0%, #d8dfc4 46%, #cab386 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.rb-chip {
+  border: 1px solid rgba(165, 182, 123, 0.28);
+  background: rgba(127, 159, 106, 0.14);
+  color: #dce8c7;
 }
 
 @keyframes rbAmbientDrift {
