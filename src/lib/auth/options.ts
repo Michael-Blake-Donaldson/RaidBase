@@ -14,6 +14,9 @@ const credentialsSchema = z.object({
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
+  secret:
+    process.env.NEXTAUTH_SECRET ??
+    (process.env.NODE_ENV === "production" ? undefined : "raidbase-dev-only-secret"),
   session: {
     strategy: "jwt",
   },
@@ -73,6 +76,6 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/",
+    signIn: "/auth/sign-in",
   },
 };

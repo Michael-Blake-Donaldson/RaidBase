@@ -5,6 +5,9 @@ export default withAuth(
     return;
   },
   {
+    pages: {
+      signIn: "/auth/sign-in",
+    },
     callbacks: {
       authorized: ({ token, req }) => {
         const pathname = req.nextUrl.pathname;
