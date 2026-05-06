@@ -1,8 +1,17 @@
 import type { NextConfig } from "next";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const scriptSrc = [
+  "'self'",
+  "'unsafe-inline'",
+  "https://js.stripe.com",
+  ...(isProduction ? [] : ["'unsafe-eval'"]),
+].join(" ");
+
 const contentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+  `script-src ${scriptSrc}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "font-src 'self' data:",
