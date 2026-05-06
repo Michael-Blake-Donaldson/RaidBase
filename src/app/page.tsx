@@ -73,18 +73,18 @@ export default async function Home() {
 
           <article className="rb-surface rounded-[28px] p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Live platform snapshot</h3>
-              <span className="rounded-full border border-[#a5d2a3]/30 bg-[#7ab896]/10 px-2.5 py-1 text-xs font-medium text-[#d7efcf]">
+              <h3 className="text-lg font-semibold text-[#11161a]">Live platform snapshot</h3>
+              <span className="rounded-full border border-[#6f8d5f]/35 bg-[#dce8d4] px-2.5 py-1 text-xs font-semibold text-[#35513f]">
                 Updated now
               </span>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
               {platformStats.slice(0, 3).map((stat) => (
-                <article key={stat.label} className="rounded-2xl border border-white/10 bg-black/25 p-4">
-                  <p className="text-xs text-slate-400">{stat.label}</p>
+                <article key={stat.label} className="rounded-2xl border border-black/12 bg-white/86 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.92),0_8px_18px_rgba(17,22,26,0.08)]">
+                  <p className="text-xs font-medium text-[#4d5a66]">{stat.label}</p>
                   <div className="mt-2 flex items-end justify-between gap-3">
-                    <p className="text-2xl font-semibold text-white">{stat.value}</p>
-                    <span className="text-xs text-[#d8debb]">{stat.delta}</span>
+                    <p className="text-4xl font-semibold leading-none text-[#11161a]">{stat.value}</p>
+                    <span className="text-sm font-semibold text-[#6b8754]">{stat.delta}</span>
                   </div>
                 </article>
               ))}
