@@ -77,6 +77,8 @@ export type NotificationItem = {
   category: "invite" | "trust" | "content" | "billing";
   priority: "High" | "Medium" | "Low";
   createdAt: string;
+  resolved?: boolean;
+  persisted?: boolean;
 };
 
 export const navItems: NavItem[] = [

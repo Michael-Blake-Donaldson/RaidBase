@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Bell, CheckCircle2, Clock3, X } from "lucide-react";
 
 import type { NotificationItem } from "@/lib/site-data";
@@ -79,6 +79,8 @@ function priorityBadge(priority: NotificationItem["priority"]) {
 export function NotificationsTray({ items }: NotificationsTrayProps) {
   const [open, setOpen] = useState(false);
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const [liveItems, setLiveItems] = useState(items);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [states, setStates] = useState<NotificationStateMap>(() => {
     if (typeof window === "undefined") {
@@ -102,15 +104,42 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
   }, [states]);
 
+  const refreshFromServer = useCallback(async (showSpinner?: boolean) => {
+    if (showSpinner) {
+      setIsRefreshing(true);
+    }
+
+    try {
+      const response = await fetch("/api/notifications", {
+        method: "GET",
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = (await response.json()) as { items?: NotificationItem[] };
+      if (Array.isArray(data.items)) {
+        setLiveItems(data.items);
+      }
+    } finally {
+      if (showSpinner) {
+        setIsRefreshing(false);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setNowMs(Date.now());
+      void refreshFromServer();
     }, 60000);
 
     return () => {
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [refreshFromServer]);
 
   useEffect(() => {
     if (!open) {
@@ -143,25 +172,47 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
     };
   }, [open]);
 
+  const mutateNotification = useCallback(async (notificationId: string, action: "accept" | "dismiss" | "open") => {
+    await fetch(`/api/notifications/${notificationId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ action }),
+    }).catch(() => undefined);
+  }, []);
+
+  const itemState = useCallback(
+    (item: NotificationItem) => {
+      const local = states[item.id];
+      if (local) {
+        return local;
+      }
+
+      return item.resolved ? "accepted" : "open";
+    },
+    [states],
+  );
+
   const activeItems = useMemo(
-    () => items.filter((item) => {
-      const state = states[item.id] ?? "open";
+    () => liveItems.filter((item) => {
+      const state = itemState(item);
       return state !== "dismissed";
     }),
-    [items, states],
+    [itemState, liveItems],
   );
 
   const unresolvedCount = useMemo(
     () => activeItems.filter((item) => {
-      const state = states[item.id] ?? "open";
+      const state = itemState(item);
       return state === "open" || state === "snoozed";
     }).length,
-    [activeItems, states],
+    [activeItems, itemState],
   );
 
   const acceptedCount = useMemo(
-    () => activeItems.filter((item) => (states[item.id] ?? "open") === "accepted").length,
-    [activeItems, states],
+    () => activeItems.filter((item) => itemState(item) === "accepted").length,
+    [activeItems, itemState],
   );
 
   const sortedItems = useMemo(() => {
@@ -179,7 +230,15 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
     <div ref={containerRef} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          setOpen((current) => {
+            const next = !current;
+            if (next) {
+              void refreshFromServer(true);
+            }
+            return next;
+          });
+        }}
         className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"
       >
         <Bell className="h-3.5 w-3.5 text-cyan-100" aria-hidden />
@@ -202,12 +261,23 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                disabled={isRefreshing}
+                onClick={() => void refreshFromServer(true)}
+                className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-2.5 py-1 text-[11px] text-cyan-100 transition hover:bg-cyan-300/20 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isRefreshing ? "Refreshing..." : "Refresh"}
+              </button>
+              <button
+                type="button"
                 onClick={() =>
                   setStates((current) => {
                     const next = { ...current };
                     for (const item of activeItems) {
-                      if ((next[item.id] ?? "open") !== "dismissed") {
+                      if (itemState(item) !== "dismissed") {
                         next[item.id] = "accepted";
+                        if (item.persisted) {
+                          void mutateNotification(item.id, "accept");
+                        }
                       }
                     }
                     return next;
@@ -243,7 +313,7 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
             ) : null}
 
             {sortedItems.map((item) => {
-              const state = states[item.id] ?? "open";
+              const state = itemState(item);
 
               return (
                 <article key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
@@ -267,7 +337,12 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link
                       href={item.href}
-                      onClick={() => setOpen(false)}
+                      onClick={() => {
+                        if (item.persisted) {
+                          void mutateNotification(item.id, "open");
+                        }
+                        setOpen(false);
+                      }}
                       className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-xs font-medium text-cyan-100 transition hover:bg-cyan-300/20"
                     >
                       Open
@@ -275,7 +350,12 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
 
                     <button
                       type="button"
-                      onClick={() => setStates((current) => ({ ...current, [item.id]: "accepted" }))}
+                      onClick={() => {
+                        setStates((current) => ({ ...current, [item.id]: "accepted" }));
+                        if (item.persisted) {
+                          void mutateNotification(item.id, "accept");
+                        }
+                      }}
                       className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1.5 text-xs font-medium text-emerald-100 transition hover:bg-emerald-300/20"
                     >
                       <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
@@ -298,7 +378,12 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
 
                     <button
                       type="button"
-                      onClick={() => setStates((current) => ({ ...current, [item.id]: "dismissed" }))}
+                      onClick={() => {
+                        setStates((current) => ({ ...current, [item.id]: "dismissed" }));
+                        if (item.persisted) {
+                          void mutateNotification(item.id, "dismiss");
+                        }
+                      }}
                       className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:text-white"
                     >
                       Dismiss
