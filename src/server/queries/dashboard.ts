@@ -87,6 +87,19 @@ async function getViewerProfile(viewerUserId?: string | null) {
   });
 }
 
+export async function getViewerProfileContext(viewerUserId?: string | null) {
+  const viewer = await getViewerProfile(viewerUserId);
+
+  if (!viewer) {
+    return null;
+  }
+
+  return {
+    region: viewer.region,
+    timezone: viewer.timezone,
+  };
+}
+
 export async function getRecommendedPlayersFromDb(viewerUserId?: string | null): Promise<PlayerCard[]> {
   const viewer = await getViewerProfile(viewerUserId);
 
@@ -118,42 +131,50 @@ export async function getRecommendedPlayersFromDb(viewerUserId?: string | null):
 
   return profiles
     .map((profile) => {
-    const primaryGame = profile.user.userGames[0];
-    const reputation = profile.user.reputation;
-    const synergy = reputation
-      ? percentile(
-          ((reputation.reliabilityScore + reputation.commsScore + reputation.skillScore + reputation.teamBehaviorScore) /
-            20) *
-            100,
-        )
-      : 0;
+      const primaryGame = profile.user.userGames[0];
+      const reputation = profile.user.reputation;
+      const synergy = reputation
+        ? percentile(
+            ((reputation.reliabilityScore + reputation.commsScore + reputation.skillScore + reputation.teamBehaviorScore) /
+              20) *
+              100,
+          )
+        : 0;
 
-    const publicBadges = reputation?.publicBadges ? jsonStringList(reputation.publicBadges) : [];
+      const publicBadges = reputation?.publicBadges ? jsonStringList(reputation.publicBadges) : [];
 
-    return {
-      username: profile.user.username,
-      displayName: profile.displayName,
-      rank: primaryGame?.rank ?? "Unranked",
-      role: primaryGame?.role ?? "Flex",
-      region: profile.region,
-      mic: profile.micPreference,
-      synergy,
-      reputation: publicBadges.length > 0 ? publicBadges : ["Growing profile"],
-      games: profile.user.userGames.map((entry) => entry.game.name),
-      tagline: profile.bio ?? "Building squad chemistry one session at a time.",
-      schedule: profile.schedule ?? "Schedule not set",
-    };
+      return {
+        card: {
+          username: profile.user.username,
+          displayName: profile.displayName,
+          rank: primaryGame?.rank ?? "Unranked",
+          role: primaryGame?.role ?? "Flex",
+          region: profile.region,
+          mic: profile.micPreference,
+          synergy,
+          reputation: publicBadges.length > 0 ? publicBadges : ["Growing profile"],
+          games: profile.user.userGames.map((entry) => entry.game.name),
+          tagline: profile.bio ?? "Building squad chemistry one session at a time.",
+          schedule: profile.schedule ?? "Schedule not set",
+        } satisfies PlayerCard,
+        matchScore: playerMatchScore(
+          {
+            region: profile.region,
+            timezone: profile.timezone,
+          },
+          viewer,
+        ),
+      };
     })
     .sort((a, b) => {
-      const aScore = playerMatchScore(a, viewer);
-      const bScore = playerMatchScore(b, viewer);
-      if (aScore !== bScore) {
-        return bScore - aScore;
+      if (a.matchScore !== b.matchScore) {
+        return b.matchScore - a.matchScore;
       }
 
-      return b.synergy - a.synergy;
+      return b.card.synergy - a.card.synergy;
     })
-    .slice(0, 6);
+    .slice(0, 6)
+    .map((entry) => entry.card);
 }
 
 export async function getLfgPostsFromDb(viewerUserId?: string | null): Promise<LfgCard[]> {

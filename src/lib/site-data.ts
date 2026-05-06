@@ -61,6 +61,24 @@ export type ReportCard = {
   evidence: string;
 };
 
+export type ActionItem = {
+  id: string;
+  title: string;
+  detail: string;
+  href: string;
+  priority: "High" | "Medium" | "Low";
+};
+
+export type NotificationItem = {
+  id: string;
+  title: string;
+  detail: string;
+  href: string;
+  category: "invite" | "trust" | "content" | "billing";
+  priority: "High" | "Medium" | "Low";
+  createdAt: string;
+};
+
 export const navItems: NavItem[] = [
   { label: "Command", href: "/" },
   { label: "LFG Grid", href: "/lfg", badge: "24" },
@@ -267,9 +285,79 @@ export const activityFeed = [
   "Your latest clip is trending in the tactical shooters showcase.",
 ];
 
+export const actionItems: ActionItem[] = [
+  {
+    id: "profile-confidence",
+    title: "Finalize profile confidence settings",
+    detail: "Set communication style and schedule depth to improve teammate overlap scores.",
+    href: "/settings",
+    priority: "High",
+  },
+  {
+    id: "lfg-fast-join",
+    title: "Apply to one matching LFG post",
+    detail: "Use region and tone fit first so invite acceptance rates stay high.",
+    href: "/lfg",
+    priority: "High",
+  },
+  {
+    id: "squad-stability",
+    title: "Review persistent squad options",
+    detail: "Move from ad-hoc sessions to repeat teams with better reliability outcomes.",
+    href: "/squads",
+    priority: "Medium",
+  },
+  {
+    id: "clip-proof",
+    title: "Add one new clip proof point",
+    detail: "Fresh clips boost trust when players are deciding between comparable profiles.",
+    href: "/clips",
+    priority: "Low",
+  },
+];
+
 export const trustControls = [
   "Require verified email before posting or reviewing.",
   "Hide public reputation aggregates until minimum reviewer threshold is met.",
   "Block duplicate session reviews and sudden negative-review clusters.",
   "Offer privacy, blocked users, notification, and billing controls in one place.",
+];
+
+export const notificationItems: NotificationItem[] = [
+  {
+    id: "invite-night-circuit",
+    title: "Night Circuit invited you to ranked blocks",
+    detail: "They matched your region and role overlap profile this week.",
+    href: "/squads",
+    category: "invite",
+    priority: "High",
+    createdAt: "2026-05-05T20:12:00.000Z",
+  },
+  {
+    id: "trust-threshold",
+    title: "Trust badge threshold reached",
+    detail: "Your profile now shows public reliability indicators.",
+    href: "/profile/ghosttrace",
+    category: "trust",
+    priority: "Medium",
+    createdAt: "2026-05-05T19:46:00.000Z",
+  },
+  {
+    id: "lfg-signal",
+    title: "Three new LFG posts fit your timezone",
+    detail: "Open spots are trending toward your preferred session window.",
+    href: "/lfg",
+    category: "content",
+    priority: "High",
+    createdAt: "2026-05-05T20:34:00.000Z",
+  },
+  {
+    id: "billing-pro",
+    title: "Pro analytics preview is available",
+    detail: "See how profile changes affected your match quality this week.",
+    href: "/settings",
+    category: "billing",
+    priority: "Low",
+    createdAt: "2026-05-05T18:20:00.000Z",
+  },
 ];

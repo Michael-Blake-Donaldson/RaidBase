@@ -11,6 +11,7 @@ import {
   getModerationQueueFromDb,
   getRecommendedPlayersFromDb,
   getSquadsFromDb,
+  getViewerProfileContext,
 } from "@/server/queries/dashboard";
 
 export async function readPlayers(viewerUserId?: string | null) {
@@ -55,5 +56,13 @@ export async function readModerationQueue() {
     return data.length > 0 ? data : moderationQueue;
   } catch {
     return moderationQueue;
+  }
+}
+
+export async function readViewerContext(viewerUserId?: string | null) {
+  try {
+    return await getViewerProfileContext(viewerUserId);
+  } catch {
+    return null;
   }
 }

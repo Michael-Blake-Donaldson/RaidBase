@@ -1,20 +1,24 @@
 import Link from "next/link";
-import { ArrowUpRight, BadgeCheck, Bell, Gamepad2, ShieldCheck, Stars, Users, Video } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, Gamepad2, ShieldCheck, Stars, Users, Video } from "lucide-react";
 
+import { ActionCenter } from "@/components/action-center";
 import { FirstSessionChecklist } from "@/components/first-session-checklist";
+import { HomeIntentSwitcher } from "@/components/home-intent-switcher";
+import { SessionPilot } from "@/components/session-pilot";
 import { SiteShell } from "@/components/site-shell";
-import { activityFeed, platformStats } from "@/lib/site-data";
+import { actionItems, platformStats } from "@/lib/site-data";
 import { getServerAuthSession } from "@/lib/auth/session";
-import { readClips, readLfgPosts, readPlayers, readSquads } from "@/server/queries/content";
+import { readClips, readLfgPosts, readPlayers, readSquads, readViewerContext } from "@/server/queries/content";
 
 export default async function Home() {
   const session = await getServerAuthSession();
 
-  const [recommendedPlayers, lfgPosts, featuredClips, squads] = await Promise.all([
+  const [recommendedPlayers, lfgPosts, featuredClips, squads, viewerContext] = await Promise.all([
     readPlayers(session?.user?.id),
     readLfgPosts(session?.user?.id),
     readClips(),
     readSquads(),
+    readViewerContext(session?.user?.id),
   ]);
 
   const signedInUsername = session?.user?.username;
@@ -87,6 +91,21 @@ export default async function Home() {
             </div>
           </article>
         </section>
+
+        <SessionPilot
+          username={signedInUsername}
+          regionHint={viewerContext?.region}
+          timezoneHint={viewerContext?.timezone}
+          recommendedCount={recommendedPlayers.length}
+          lfgCount={lfgPosts.length}
+          squadCount={squads.length}
+        />
+
+        <HomeIntentSwitcher
+          playerCount={recommendedPlayers.length}
+          lfgCount={lfgPosts.length}
+          squadCount={squads.length}
+        />
 
         <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
           <FirstSessionChecklist username={signedInUsername} />
@@ -214,27 +233,7 @@ export default async function Home() {
             </Link>
           </article>
 
-          <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-400">Activity feed</p>
-                <h3 className="mt-2 text-2xl font-semibold text-white">Next actions</h3>
-              </div>
-              <Bell className="h-5 w-5 text-cyan-200" />
-            </div>
-            <div className="space-y-4">
-              {activityFeed.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/20 bg-slate-950/35 p-5 text-sm text-slate-300">
-                  You are all caught up.
-                </div>
-              ) : null}
-              {activityFeed.map((item) => (
-                <div key={item} className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4 text-sm leading-7 text-slate-300">
-                  {item}
-                </div>
-              ))}
-            </div>
-          </article>
+          <ActionCenter items={actionItems} />
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[1fr_0.92fr]">

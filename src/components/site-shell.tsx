@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Bell, ChevronRight, ShieldCheck, Users, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { CommandPalette } from "@/components/command-palette";
 import { MotionFade } from "@/components/motion-fade";
-import { navItems } from "@/lib/site-data";
+import { NotificationsTray } from "@/components/notifications-tray";
+import { navItems, notificationItems } from "@/lib/site-data";
 import { siteConfig } from "@/lib/site-config";
 
 type SiteShellProps = {
@@ -155,6 +157,8 @@ export function SiteShell({
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
+              <NotificationsTray items={notificationItems} />
+              <CommandPalette navItems={navItems} />
               <Link
                 href="/auth/sign-in"
                 className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"

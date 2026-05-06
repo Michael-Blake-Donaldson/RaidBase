@@ -1,0 +1,283 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { Bell, CheckCircle2, Clock3, X } from "lucide-react";
+
+import type { NotificationItem } from "@/lib/site-data";
+
+type NotificationsTrayProps = {
+  items: NotificationItem[];
+};
+
+type NotificationState = "open" | "accepted" | "snoozed" | "dismissed";
+type NotificationStateMap = Record<string, NotificationState>;
+
+const STORAGE_KEY = "raidbase-notifications-tray-state";
+
+const priorityWeight: Record<NotificationItem["priority"], number> = {
+  High: 3,
+  Medium: 2,
+  Low: 1,
+};
+
+function timeAgo(fromIso: string, nowMs: number) {
+  const createdMs = new Date(fromIso).getTime();
+
+  if (Number.isNaN(createdMs)) {
+    return "recent";
+  }
+
+  const diffMs = Math.max(0, nowMs - createdMs);
+  const diffMinutes = Math.floor(diffMs / 60000);
+
+  if (diffMinutes < 1) {
+    return "just now";
+  }
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m ago`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d ago`;
+}
+
+function categoryLabel(category: NotificationItem["category"]) {
+  if (category === "invite") {
+    return "Invite";
+  }
+
+  if (category === "trust") {
+    return "Trust";
+  }
+
+  if (category === "billing") {
+    return "Billing";
+  }
+
+  return "Content";
+}
+
+function priorityBadge(priority: NotificationItem["priority"]) {
+  if (priority === "High") {
+    return "border-rose-300/30 bg-rose-300/10 text-rose-100";
+  }
+
+  if (priority === "Medium") {
+    return "border-amber-300/30 bg-amber-300/10 text-amber-100";
+  }
+
+  return "border-emerald-300/30 bg-emerald-300/10 text-emerald-100";
+}
+
+export function NotificationsTray({ items }: NotificationsTrayProps) {
+  const [open, setOpen] = useState(false);
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const [states, setStates] = useState<NotificationStateMap>(() => {
+    if (typeof window === "undefined") {
+      return {};
+    }
+
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+
+    if (!raw) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(raw) as NotificationStateMap;
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
+  }, [states]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 60000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const activeItems = useMemo(
+    () => items.filter((item) => {
+      const state = states[item.id] ?? "open";
+      return state !== "dismissed";
+    }),
+    [items, states],
+  );
+
+  const unresolvedCount = useMemo(
+    () => activeItems.filter((item) => {
+      const state = states[item.id] ?? "open";
+      return state === "open" || state === "snoozed";
+    }).length,
+    [activeItems, states],
+  );
+
+  const acceptedCount = useMemo(
+    () => activeItems.filter((item) => (states[item.id] ?? "open") === "accepted").length,
+    [activeItems, states],
+  );
+
+  const sortedItems = useMemo(() => {
+    return [...activeItems].sort((a, b) => {
+      const priorityDiff = priorityWeight[b.priority] - priorityWeight[a.priority];
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  }, [activeItems]);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"
+      >
+        <Bell className="h-3.5 w-3.5 text-cyan-100" aria-hidden />
+        Notifications
+        <span className="rounded-full border border-cyan-300/25 bg-cyan-300/12 px-2 py-0.5 text-[10px] text-cyan-100">
+          {unresolvedCount}
+        </span>
+      </button>
+
+      {open ? (
+        <div className="absolute right-0 z-50 mt-2 w-[min(92vw,30rem)] rounded-2xl border border-cyan-300/25 bg-slate-950/95 p-3 shadow-[0_22px_60px_rgba(2,9,19,0.7)] backdrop-blur">
+          <div className="mb-2 flex items-center justify-between px-1 py-1">
+            <div>
+              <p className="text-xs text-slate-400">Actionable notifications</p>
+              <h3 className="text-sm font-semibold text-white">Resolve in place</h3>
+              <p className="mt-1 text-[11px] text-slate-400">
+                {unresolvedCount} unresolved • {acceptedCount} accepted
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setStates((current) => {
+                    const next = { ...current };
+                    for (const item of activeItems) {
+                      if ((next[item.id] ?? "open") !== "dismissed") {
+                        next[item.id] = "accepted";
+                      }
+                    }
+                    return next;
+                  })
+                }
+                className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2.5 py-1 text-[11px] text-emerald-100 transition hover:bg-emerald-300/20"
+              >
+                Accept all
+              </button>
+              <button
+                type="button"
+                onClick={() => setStates({})}
+                className="rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-slate-200 transition hover:text-white"
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-md border border-white/15 bg-white/5 p-1 text-slate-300 transition hover:text-white"
+                aria-label="Close notifications tray"
+              >
+                <X className="h-4 w-4" aria-hidden />
+              </button>
+            </div>
+          </div>
+
+          <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+            {activeItems.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-emerald-300/35 bg-emerald-300/10 p-4 text-sm text-emerald-100">
+                All notifications cleared.
+              </div>
+            ) : null}
+
+            {sortedItems.map((item) => {
+              const state = states[item.id] ?? "open";
+
+              return (
+                <article key={item.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div className="mb-1 flex items-center justify-between gap-2">
+                    <p className="text-sm font-medium text-white">{item.title}</p>
+                    <span className={`rounded-full border px-2 py-0.5 text-[11px] ${priorityBadge(item.priority)}`}>
+                      {item.priority}
+                    </span>
+                  </div>
+
+                  <p className="text-xs leading-6 text-slate-300">{item.detail}</p>
+
+                  <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
+                    <span className="rounded-full border border-white/15 bg-white/5 px-2 py-0.5">
+                      {categoryLabel(item.category)}
+                    </span>
+                    <span>{timeAgo(item.createdAt, nowMs)}</span>
+                    <span>Status: {state}</span>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1.5 text-xs font-medium text-cyan-100 transition hover:bg-cyan-300/20"
+                    >
+                      Open
+                    </Link>
+
+                    <button
+                      type="button"
+                      onClick={() => setStates((current) => ({ ...current, [item.id]: "accepted" }))}
+                      className="inline-flex items-center gap-1 rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1.5 text-xs font-medium text-emerald-100 transition hover:bg-emerald-300/20"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
+                      Accept
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setStates((current) => ({
+                          ...current,
+                          [item.id]: state === "snoozed" ? "open" : "snoozed",
+                        }))
+                      }
+                      className="inline-flex items-center gap-1 rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:bg-amber-300/20"
+                    >
+                      <Clock3 className="h-3.5 w-3.5" aria-hidden />
+                      {state === "snoozed" ? "Unsnooze" : "Snooze"}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setStates((current) => ({ ...current, [item.id]: "dismissed" }))}
+                      className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:text-white"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
