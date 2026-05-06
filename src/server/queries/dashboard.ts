@@ -26,8 +26,78 @@ const statusLabel: Record<ReportStatus, string> = {
   DISMISSED: "Dismissed by moderation",
 };
 
-export async function getRecommendedPlayersFromDb(): Promise<PlayerCard[]> {
+function timezoneArea(timezone: string) {
+  return timezone.split("/")[0] ?? "";
+}
+
+function playerMatchScore(
+  candidate: { region: string; timezone: string },
+  viewer: { region: string; timezone: string } | null,
+) {
+  if (!viewer) {
+    return 0;
+  }
+
+  let score = 0;
+  if (candidate.region === viewer.region) {
+    score += 40;
+  } else if (candidate.region.split(" ")[0] === viewer.region.split(" ")[0]) {
+    score += 20;
+  }
+
+  if (candidate.timezone === viewer.timezone) {
+    score += 25;
+  } else if (timezoneArea(candidate.timezone) === timezoneArea(viewer.timezone)) {
+    score += 12;
+  }
+
+  return score;
+}
+
+function lfgMatchScore(
+  candidate: { region: string },
+  viewer: { region: string; timezone: string } | null,
+) {
+  if (!viewer) {
+    return 0;
+  }
+
+  if (candidate.region === viewer.region) {
+    return 35;
+  }
+
+  if (candidate.region.split(" ")[0] === viewer.region.split(" ")[0]) {
+    return 15;
+  }
+
+  return 0;
+}
+
+async function getViewerProfile(viewerUserId?: string | null) {
+  if (!viewerUserId) {
+    return null;
+  }
+
+  return db.profile.findUnique({
+    where: { userId: viewerUserId },
+    select: {
+      region: true,
+      timezone: true,
+    },
+  });
+}
+
+export async function getRecommendedPlayersFromDb(viewerUserId?: string | null): Promise<PlayerCard[]> {
+  const viewer = await getViewerProfile(viewerUserId);
+
   const profiles = await db.profile.findMany({
+    where: viewerUserId
+      ? {
+          userId: {
+            not: viewerUserId,
+          },
+        }
+      : undefined,
     include: {
       user: {
         include: {
@@ -40,13 +110,14 @@ export async function getRecommendedPlayersFromDb(): Promise<PlayerCard[]> {
         },
       },
     },
-    take: 6,
+    take: 18,
     orderBy: {
       updatedAt: "desc",
     },
   });
 
-  return profiles.map((profile) => {
+  return profiles
+    .map((profile) => {
     const primaryGame = profile.user.userGames[0];
     const reputation = profile.user.reputation;
     const synergy = reputation
@@ -72,10 +143,22 @@ export async function getRecommendedPlayersFromDb(): Promise<PlayerCard[]> {
       tagline: profile.bio ?? "Building squad chemistry one session at a time.",
       schedule: profile.schedule ?? "Schedule not set",
     };
-  });
+    })
+    .sort((a, b) => {
+      const aScore = playerMatchScore(a, viewer);
+      const bScore = playerMatchScore(b, viewer);
+      if (aScore !== bScore) {
+        return bScore - aScore;
+      }
+
+      return b.synergy - a.synergy;
+    })
+    .slice(0, 6);
 }
 
-export async function getLfgPostsFromDb(): Promise<LfgCard[]> {
+export async function getLfgPostsFromDb(viewerUserId?: string | null): Promise<LfgCard[]> {
+  const viewer = await getViewerProfile(viewerUserId);
+
   const posts = await db.lfgPost.findMany({
     where: {
       status: "OPEN",
@@ -89,18 +172,28 @@ export async function getLfgPostsFromDb(): Promise<LfgCard[]> {
     },
   });
 
-  return posts.map((post) => ({
-    id: post.id,
-    title: post.title,
-    game: post.game.name,
-    region: post.region,
-    rank: [post.rankMin, post.rankMax].filter(Boolean).join(" - ") || "All ranks",
-    roles: jsonStringList(post.rolesNeeded),
-    schedule: post.schedule,
-    tone: post.tone,
-    micRequired: post.micRequired,
-    openSpots: Math.max(0, 5 - post.applications.length),
-  }));
+  return posts
+    .map((post) => ({
+      id: post.id,
+      title: post.title,
+      game: post.game.name,
+      region: post.region,
+      rank: [post.rankMin, post.rankMax].filter(Boolean).join(" - ") || "All ranks",
+      roles: jsonStringList(post.rolesNeeded),
+      schedule: post.schedule,
+      tone: post.tone,
+      micRequired: post.micRequired,
+      openSpots: Math.max(0, 5 - post.applications.length),
+    }))
+    .sort((a, b) => {
+      const aScore = lfgMatchScore(a, viewer);
+      const bScore = lfgMatchScore(b, viewer);
+      if (aScore !== bScore) {
+        return bScore - aScore;
+      }
+
+      return b.openSpots - a.openSpots;
+    });
 }
 
 export async function getClipsFromDb(): Promise<ClipCard[]> {

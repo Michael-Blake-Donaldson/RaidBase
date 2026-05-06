@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 
+import { REGION_OPTIONS, TIMEZONE_OPTIONS } from "@/lib/profile-options";
+
 export function RegisterForm() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -98,24 +100,32 @@ export function RegisterForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block space-y-2 text-sm text-slate-200">
           <span>Region</span>
-          <input
-            type="text"
-            required
+          <select
             value={form.region}
             onChange={(event) => setForm((current) => ({ ...current, region: event.target.value }))}
             className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
-          />
+          >
+            {REGION_OPTIONS.map((region) => (
+              <option key={region} value={region}>
+                {region}
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="block space-y-2 text-sm text-slate-200">
           <span>Timezone</span>
-          <input
-            type="text"
-            required
+          <select
             value={form.timezone}
             onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))}
             className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
-          />
+          >
+            {TIMEZONE_OPTIONS.map((timezone) => (
+              <option key={timezone} value={timezone}>
+                {timezone}
+              </option>
+            ))}
+          </select>
         </label>
       </div>
 

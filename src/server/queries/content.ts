@@ -13,18 +13,18 @@ import {
   getSquadsFromDb,
 } from "@/server/queries/dashboard";
 
-export async function readPlayers() {
+export async function readPlayers(viewerUserId?: string | null) {
   try {
-    const data = await getRecommendedPlayersFromDb();
+    const data = await getRecommendedPlayersFromDb(viewerUserId);
     return data.length > 0 ? data : recommendedPlayers;
   } catch {
     return recommendedPlayers;
   }
 }
 
-export async function readLfgPosts() {
+export async function readLfgPosts(viewerUserId?: string | null) {
   try {
-    const data = await getLfgPostsFromDb();
+    const data = await getLfgPostsFromDb(viewerUserId);
     return data.length > 0 ? data : lfgPosts;
   } catch {
     return lfgPosts;

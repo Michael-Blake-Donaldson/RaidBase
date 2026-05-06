@@ -8,23 +8,16 @@ import { getServerAuthSession } from "@/lib/auth/session";
 import { readClips, readLfgPosts, readPlayers, readSquads } from "@/server/queries/content";
 
 export default async function Home() {
-  const [recommendedPlayers, lfgPosts, featuredClips, squads, session] = await Promise.all([
-    readPlayers(),
-    readLfgPosts(),
+  const session = await getServerAuthSession();
+
+  const [recommendedPlayers, lfgPosts, featuredClips, squads] = await Promise.all([
+    readPlayers(session?.user?.id),
+    readLfgPosts(session?.user?.id),
     readClips(),
     readSquads(),
-    getServerAuthSession(),
   ]);
 
   const signedInUsername = session?.user?.username;
-
-  const prioritizedPlayers =
-    signedInUsername && recommendedPlayers.length > 0
-      ? [
-          ...recommendedPlayers.filter((player) => player.username === signedInUsername),
-          ...recommendedPlayers.filter((player) => player.username !== signedInUsername),
-        ]
-      : recommendedPlayers;
 
   return (
     <SiteShell
@@ -145,7 +138,7 @@ export default async function Home() {
                   No fit suggestions yet. Complete role preferences to get recommendations.
                 </div>
               ) : null}
-              {prioritizedPlayers.slice(0, 2).map((player) => (
+              {recommendedPlayers.slice(0, 2).map((player) => (
                 <Link
                   key={player.username}
                   href={`/profile/${player.username}`}

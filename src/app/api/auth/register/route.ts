@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
+import { REGION_OPTIONS, TIMEZONE_OPTIONS } from "@/lib/profile-options";
 import { validateUsername } from "@/lib/auth/username";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -11,8 +12,8 @@ const registerSchema = z.object({
   email: z.string().email(),
   username: z.string().min(3).max(24),
   password: z.string().min(8).max(128),
-  region: z.string().min(2).max(64),
-  timezone: z.string().min(2).max(64),
+  region: z.enum(REGION_OPTIONS),
+  timezone: z.enum(TIMEZONE_OPTIONS),
 });
 
 export async function POST(request: Request) {

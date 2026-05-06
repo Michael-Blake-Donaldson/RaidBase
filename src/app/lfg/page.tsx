@@ -15,7 +15,8 @@ const filterPills = [
 ];
 
 export default async function LfgPage() {
-  const [lfgPosts, session] = await Promise.all([readLfgPosts(), getServerAuthSession()]);
+  const session = await getServerAuthSession();
+  const lfgPosts = await readLfgPosts(session?.user?.id);
 
   return (
     <SiteShell
