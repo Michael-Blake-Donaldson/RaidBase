@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #07111f;
+  --foreground: #f3f7ff;
+  --surface: #13243a;
+  --surface-2: #0e1b2d;
+  --accent: #2da8ff;
+  --accent-cyan: #36e0ff;
+  --accent-violet: #8b5cff;
+  --success: #3dffae;
+  --danger: #ff4f6d;
+  --gold: #ffc857;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-sora);
+  --font-orbitron: var(--font-orbitron);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  outline-color: var(--accent-cyan);
+}
+
+::selection {
+  background: rgba(54, 224, 255, 0.22);
+  color: var(--foreground);
+}
+
+.grid-overlay {
+  position: relative;
+}
+
+.grid-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(169, 183, 208, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(169, 183, 208, 0.08) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.7), transparent 92%);
 }
