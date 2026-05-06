@@ -22,6 +22,7 @@ export default async function SettingsPage() {
       language: true,
       micPreference: true,
       schedule: true,
+      updatedAt: true,
     },
   });
 
@@ -40,6 +41,7 @@ export default async function SettingsPage() {
         username={session.user.username}
         email={session.user.email ?? ""}
         initialProfile={profile}
+        lastSyncedAt={profile.updatedAt.toISOString()}
       />
     </SiteShell>
   );

@@ -161,6 +161,9 @@ And track runtime metrics in production:
 What is implemented now:
 
 - Real route structure for the main product areas
+- Session-aware command center personalization
+- First-session checklist flow for onboarding completion
+- Trust-transparency explanations for recommendation surfaces
 - Dynamic profile routing
 - Shared desktop-first layout shell
 - Product-specific visual system
@@ -168,6 +171,7 @@ What is implemented now:
 - Credential authentication via NextAuth with Prisma adapter
 - User registration API with validation and rate limiting
 - Functional settings page with DB-backed profile updates
+- Settings safety UX with reset-unsaved and undo-last-save actions
 - Health check endpoint at `/api/health`
 - Route-level loading and error boundaries for key flows
 - Global application error boundary

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 
 type ProfileSettings = {
@@ -17,10 +17,11 @@ type SettingsClientProps = {
   username: string;
   email: string;
   initialProfile: ProfileSettings;
+  lastSyncedAt: string;
 };
 
-export function SettingsClient({ username, email, initialProfile }: SettingsClientProps) {
-  const [form, setForm] = useState({
+export function SettingsClient({ username, email, initialProfile, lastSyncedAt }: SettingsClientProps) {
+  const initialForm = {
     displayName: initialProfile.displayName,
     bio: initialProfile.bio ?? "",
     region: initialProfile.region,
@@ -28,14 +29,26 @@ export function SettingsClient({ username, email, initialProfile }: SettingsClie
     language: initialProfile.language ?? "",
     micPreference: initialProfile.micPreference,
     schedule: initialProfile.schedule ?? "",
+  };
+
+  const [form, setForm] = useState({
+    ...initialForm,
   });
+  const [baselineForm, setBaselineForm] = useState({ ...initialForm });
+  const [previousSavedForm, setPreviousSavedForm] = useState<typeof initialForm | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [syncedAt, setSyncedAt] = useState(lastSyncedAt);
   const [isOpeningBilling, setIsOpeningBilling] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
 
-  async function onSaveProfile() {
+  const hasUnsavedChanges = useMemo(
+    () => JSON.stringify(form) !== JSON.stringify(baselineForm),
+    [form, baselineForm],
+  );
+
+  async function saveProfile(nextForm: typeof initialForm, options?: { successMessage?: string }) {
     setIsSaving(true);
     setSaveError(null);
     setSaveMessage(null);
@@ -45,18 +58,70 @@ export function SettingsClient({ username, email, initialProfile }: SettingsClie
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify(form),
+      body: JSON.stringify(nextForm),
     });
 
+    const payload = (await response.json().catch(() => null)) as
+      | {
+          error?: string;
+          profile?: {
+            displayName: string;
+            bio: string | null;
+            region: string;
+            timezone: string;
+            language: string | null;
+            micPreference: string;
+            schedule: string | null;
+            updatedAt: string;
+          };
+        }
+      | null;
+
     if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
       setSaveError(payload?.error ?? "Could not save your settings.");
       setIsSaving(false);
       return;
     }
 
-    setSaveMessage("Settings saved successfully.");
+    if (payload?.profile) {
+      const normalized = {
+        displayName: payload.profile.displayName,
+        bio: payload.profile.bio ?? "",
+        region: payload.profile.region,
+        timezone: payload.profile.timezone,
+        language: payload.profile.language ?? "",
+        micPreference: payload.profile.micPreference,
+        schedule: payload.profile.schedule ?? "",
+      };
+      setForm(normalized);
+      setBaselineForm(normalized);
+      setSyncedAt(payload.profile.updatedAt);
+    }
+
+    setSaveMessage(options?.successMessage ?? "Settings saved successfully.");
     setIsSaving(false);
+  }
+
+  async function onSaveProfile() {
+    setPreviousSavedForm({ ...baselineForm });
+    await saveProfile(form);
+  }
+
+  async function onUndoLastSave() {
+    if (!previousSavedForm) {
+      return;
+    }
+
+    await saveProfile(previousSavedForm, {
+      successMessage: "Last save reverted. Previous settings restored.",
+    });
+    setPreviousSavedForm(null);
+  }
+
+  function onResetUnsavedChanges() {
+    setForm({ ...baselineForm });
+    setSaveError(null);
+    setSaveMessage("Unsaved edits were reset.");
   }
 
   async function onOpenBillingPortal() {
@@ -157,10 +222,26 @@ export function SettingsClient({ username, email, initialProfile }: SettingsClie
           <button
             type="button"
             onClick={onSaveProfile}
-            disabled={isSaving}
+            disabled={isSaving || !hasUnsavedChanges}
             className="rounded-full bg-cyan-300 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSaving ? "Saving..." : "Save settings"}
+          </button>
+          <button
+            type="button"
+            onClick={onResetUnsavedChanges}
+            disabled={isSaving || !hasUnsavedChanges}
+            className="rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            Reset unsaved
+          </button>
+          <button
+            type="button"
+            onClick={onUndoLastSave}
+            disabled={isSaving || !previousSavedForm}
+            className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2.5 text-sm font-medium text-emerald-100 transition hover:bg-emerald-300/20 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            Undo last save
           </button>
           {saveMessage ? <p className="text-sm text-emerald-200">{saveMessage}</p> : null}
           {saveError ? <p className="text-sm text-rose-200">{saveError}</p> : null}
@@ -178,6 +259,10 @@ export function SettingsClient({ username, email, initialProfile }: SettingsClie
             <div>
               <dt className="text-slate-400">Email</dt>
               <dd>{email || "No email available"}</dd>
+            </div>
+            <div>
+              <dt className="text-slate-400">Last synced</dt>
+              <dd>{new Date(syncedAt).toLocaleString()}</dd>
             </div>
           </dl>
         </article>
@@ -206,6 +291,21 @@ export function SettingsClient({ username, email, initialProfile }: SettingsClie
           >
             Sign out
           </button>
+        </article>
+
+        <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+          <h3 className="text-xl font-semibold text-white">Help and trust</h3>
+          <p className="mt-2 text-sm text-slate-300">
+            Need support or want full transparency on trust scoring? Start with these docs.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <a href="/privacy" className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-white/10">
+              Privacy policy
+            </a>
+            <a href="/terms" className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-white/10">
+              Terms
+            </a>
+          </div>
         </article>
       </aside>
     </div>

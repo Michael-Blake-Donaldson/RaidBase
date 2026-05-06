@@ -1,23 +1,36 @@
 import Link from "next/link";
-import { ArrowUpRight, BadgeCheck, Bell, Gamepad2, Stars, Users, Video } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, Bell, Gamepad2, ShieldCheck, Stars, Users, Video } from "lucide-react";
 
+import { FirstSessionChecklist } from "@/components/first-session-checklist";
 import { SiteShell } from "@/components/site-shell";
 import { activityFeed, platformStats } from "@/lib/site-data";
+import { getServerAuthSession } from "@/lib/auth/session";
 import { readClips, readLfgPosts, readPlayers, readSquads } from "@/server/queries/content";
 
 export default async function Home() {
-  const [recommendedPlayers, lfgPosts, featuredClips, squads] = await Promise.all([
+  const [recommendedPlayers, lfgPosts, featuredClips, squads, session] = await Promise.all([
     readPlayers(),
     readLfgPosts(),
     readClips(),
     readSquads(),
+    getServerAuthSession(),
   ]);
+
+  const signedInUsername = session?.user?.username;
+
+  const prioritizedPlayers =
+    signedInUsername && recommendedPlayers.length > 0
+      ? [
+          ...recommendedPlayers.filter((player) => player.username === signedInUsername),
+          ...recommendedPlayers.filter((player) => player.username !== signedInUsername),
+        ]
+      : recommendedPlayers;
 
   return (
     <SiteShell
       activePath="/"
       eyebrow="Command center"
-      title="Find your next reliable stack in under 60 seconds."
+      title={signedInUsername ? `Welcome back, ${signedInUsername}. Your next reliable stack is ready.` : "Find your next reliable stack in under 60 seconds."}
       description="Raidbase gives you profile trust, role-fit matching, and persistent squads without forcing you to scan dense dashboards."
     >
       <div className="space-y-6">
@@ -43,6 +56,14 @@ export default async function Home() {
                 Open LFG now
                 <ArrowUpRight className="h-4 w-4" />
               </Link>
+              {!signedInUsername ? (
+                <Link
+                  href="/auth/sign-in"
+                  className="inline-flex items-center gap-2 rounded-full border border-cyan-300/35 bg-cyan-300/10 px-5 py-3 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20"
+                >
+                  Sign in for personalized matches
+                </Link>
+              ) : null}
               <Link
                 href="/profile/ghosttrace"
                 className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"
@@ -74,6 +95,41 @@ export default async function Home() {
           </article>
         </section>
 
+        <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+          <FirstSessionChecklist username={signedInUsername} />
+
+          <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-400">Trust transparency</p>
+                <h3 className="mt-2 text-2xl font-semibold text-white">Why these recommendations appear first</h3>
+              </div>
+              <ShieldCheck className="h-5 w-5 text-cyan-200" />
+            </div>
+
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                <p className="text-sm font-medium text-white">Role and rank compatibility</p>
+                <p className="mt-1 text-xs leading-6 text-slate-300">
+                  We prioritize players whose role demand and rank window overlap your likely session needs.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                <p className="text-sm font-medium text-white">Schedule and communication fit</p>
+                <p className="mt-1 text-xs leading-6 text-slate-300">
+                  Time overlap and mic preferences are weighted before you spend time sending invites.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+                <p className="text-sm font-medium text-white">Reputation quality threshold</p>
+                <p className="mt-1 text-xs leading-6 text-slate-300">
+                  Public badges are shown only after minimum reviewer thresholds to reduce brigading noise.
+                </p>
+              </div>
+            </div>
+          </article>
+        </section>
+
         <section className="grid gap-6 2xl:grid-cols-[1fr_1fr_0.85fr]">
           <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
             <div className="mb-5 flex items-center justify-between">
@@ -89,7 +145,7 @@ export default async function Home() {
                   No fit suggestions yet. Complete role preferences to get recommendations.
                 </div>
               ) : null}
-              {recommendedPlayers.slice(0, 2).map((player) => (
+              {prioritizedPlayers.slice(0, 2).map((player) => (
                 <Link
                   key={player.username}
                   href={`/profile/${player.username}`}
