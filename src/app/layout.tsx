@@ -29,6 +29,14 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "256x256" },
+      { url: "/raidbaselogo-transparent.png", type: "image/png", sizes: "256x256" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "256x256", type: "image/png" }],
+    shortcut: ["/icon.png"],
+  },
   alternates: {
     canonical: "/",
   },
@@ -59,6 +67,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-rb-theme="day"
+      suppressHydrationWarning
       className={`${inter.variable} ${sora.variable} ${orbitron.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

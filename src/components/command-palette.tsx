@@ -193,11 +193,11 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
       <button
         type="button"
         onClick={openPalette}
-        className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:border-cyan-300/35 hover:bg-white/10"
+        className="rb-button-secondary inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-medium transition"
       >
-        <Command className="h-3.5 w-3.5 text-cyan-100" aria-hidden />
+        <Command className="rb-icon h-3.5 w-3.5" aria-hidden />
         Command menu
-        <span className="rounded border border-white/20 bg-slate-950/70 px-1.5 py-0.5 text-[10px] text-slate-300">
+        <span className="rb-pill rounded px-1.5 py-0.5 text-[10px]">
           Ctrl+K
         </span>
       </button>
@@ -213,10 +213,10 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
             aria-label="Command palette"
             onClick={(event) => event.stopPropagation()}
             onKeyDown={onPaletteKeyDown}
-            className="w-full max-w-2xl rounded-2xl border border-cyan-300/25 bg-slate-950/94 shadow-[0_30px_80px_rgba(1,8,18,0.6)]"
+            className="rb-overlay w-full max-w-2xl rounded-2xl"
           >
-            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
-              <Search className="h-4 w-4 text-cyan-100" aria-hidden />
+            <div className="flex items-center gap-2 border-b border-gray-300/30 px-4 py-3">
+              <Search className="rb-icon h-4 w-4" aria-hidden />
               <input
                 autoFocus
                 value={query}
@@ -225,12 +225,12 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
                   setSelectedIndex(0);
                 }}
                 placeholder="Search destinations and quick actions..."
-                className="w-full bg-transparent text-sm text-white placeholder:text-slate-500 focus:outline-none"
+                className="rb-text-strong w-full bg-transparent text-sm placeholder:text-slate-500 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={closePalette}
-                className="rounded-md border border-white/15 bg-white/5 p-1 text-slate-200 transition hover:text-white"
+                className="rb-button-secondary rounded-md p-1 transition"
                 aria-label="Close command palette"
               >
                 <X className="h-4 w-4" aria-hidden />
@@ -239,7 +239,7 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
 
             <div className="max-h-[55vh] overflow-y-auto p-3">
               {filteredActions.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-white/20 bg-white/5 px-4 py-6 text-center text-sm text-slate-300">
+                <div className="rb-surface-soft rb-text-body rounded-xl border border-dashed px-4 py-6 text-center text-sm">
                   No command matches that search.
                 </div>
               ) : null}
@@ -254,10 +254,10 @@ export function CommandPalette({ navItems }: CommandPaletteProps) {
                       type="button"
                       onMouseEnter={() => setSelectedIndex(index)}
                       onClick={() => runAction(action)}
-                      className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm text-white transition ${
+                      className={`rb-text-strong flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-3 text-left text-sm transition ${
                         selected
-                          ? "border-cyan-300/45 bg-cyan-300/14"
-                          : "border-white/10 bg-white/5 hover:border-cyan-300/30 hover:bg-cyan-300/10"
+                          ? "rb-badge-info"
+                          : "rb-surface-soft hover:border-cyan-300/30 hover:bg-cyan-300/10"
                       }`}
                     >
                       <div className="flex items-center gap-3">

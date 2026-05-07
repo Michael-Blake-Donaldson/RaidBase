@@ -15,28 +15,28 @@ export default async function ClipsPage() {
     >
       <div className="grid gap-6 lg:grid-cols-3">
         {featuredClips.map((clip) => (
-          <article key={clip.title} className="overflow-hidden rounded-[28px] border border-white/10 bg-white/5">
+          <article key={clip.title} className="rb-surface-strong overflow-hidden rounded-[28px]">
             <div className="flex aspect-video items-end bg-[linear-gradient(135deg,rgba(45,168,255,0.35),rgba(139,92,255,0.25),rgba(5,11,20,0.65))] p-5">
-              <span className="rounded-full border border-white/15 bg-black/25 px-3 py-1 text-xs uppercase tracking-[0.24em] text-white">
+              <span className="rb-badge-info rounded-full px-3 py-1 text-xs uppercase tracking-[0.24em]">
                 {clip.mood}
               </span>
             </div>
             <div className="space-y-4 p-5">
               <div>
-                <h2 className="text-xl font-semibold text-white">{clip.title}</h2>
-                <p className="mt-2 text-sm text-slate-400">{clip.player} • {clip.game}</p>
+                <h2 className="rb-text-strong text-xl font-semibold">{clip.title}</h2>
+                <p className="rb-text-muted mt-2 text-sm">{clip.player} • {clip.game}</p>
               </div>
-              <div className="grid gap-3 text-sm text-slate-300">
-                <div className="flex items-center gap-2 rounded-[20px] border border-white/10 bg-slate-950/45 p-3">
-                  <Film className="h-4 w-4 text-cyan-200" />
+              <div className="rb-text-body grid gap-3 text-sm">
+                <div className="rb-surface-soft flex items-center gap-2 rounded-[20px] p-3">
+                  <Film className="rb-icon h-4 w-4" />
                   {clip.duration} highlight length
                 </div>
-                <div className="flex items-center gap-2 rounded-[20px] border border-white/10 bg-slate-950/45 p-3">
-                  <Flame className="h-4 w-4 text-cyan-200" />
+                <div className="rb-surface-soft flex items-center gap-2 rounded-[20px] p-3">
+                  <Flame className="rb-icon h-4 w-4" />
                   {clip.views} showcase views
                 </div>
-                <div className="flex items-center gap-2 rounded-[20px] border border-white/10 bg-slate-950/45 p-3">
-                  <Trophy className="h-4 w-4 text-cyan-200" />
+                <div className="rb-surface-soft flex items-center gap-2 rounded-[20px] p-3">
+                  <Trophy className="rb-icon h-4 w-4" />
                   Creator spotlight eligible
                 </div>
               </div>

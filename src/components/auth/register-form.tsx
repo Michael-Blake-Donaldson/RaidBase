@@ -58,19 +58,19 @@ export function RegisterForm() {
 
   return (
     <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-      <label className="block space-y-2 text-sm text-slate-200">
+      <label className="rb-text-body block space-y-2 text-sm">
         <span>Email</span>
         <input
           type="email"
           required
           value={form.email}
           onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
-          className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+          className="rb-field w-full rounded-xl px-3 py-2"
           autoComplete="email"
         />
       </label>
 
-      <label className="block space-y-2 text-sm text-slate-200">
+      <label className="rb-text-body block space-y-2 text-sm">
         <span>Username</span>
         <input
           type="text"
@@ -79,12 +79,12 @@ export function RegisterForm() {
           maxLength={24}
           value={form.username}
           onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
-          className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+          className="rb-field w-full rounded-xl px-3 py-2"
           autoComplete="username"
         />
       </label>
 
-      <label className="block space-y-2 text-sm text-slate-200">
+      <label className="rb-text-body block space-y-2 text-sm">
         <span>Password</span>
         <input
           type="password"
@@ -92,18 +92,18 @@ export function RegisterForm() {
           minLength={8}
           value={form.password}
           onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
-          className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+          className="rb-field w-full rounded-xl px-3 py-2"
           autoComplete="new-password"
         />
       </label>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block space-y-2 text-sm text-slate-200">
+        <label className="rb-text-body block space-y-2 text-sm">
           <span>Region</span>
           <select
             value={form.region}
             onChange={(event) => setForm((current) => ({ ...current, region: event.target.value }))}
-            className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+            className="rb-field w-full rounded-xl px-3 py-2"
           >
             {REGION_OPTIONS.map((region) => (
               <option key={region} value={region}>
@@ -113,12 +113,12 @@ export function RegisterForm() {
           </select>
         </label>
 
-        <label className="block space-y-2 text-sm text-slate-200">
+        <label className="rb-text-body block space-y-2 text-sm">
           <span>Timezone</span>
           <select
             value={form.timezone}
             onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))}
-            className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+            className="rb-field w-full rounded-xl px-3 py-2"
           >
             {TIMEZONE_OPTIONS.map((timezone) => (
               <option key={timezone} value={timezone}>
@@ -134,14 +134,14 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-cyan-300 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
+        className="rb-button-primary w-full rounded-full px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70"
       >
         {isSubmitting ? "Creating account..." : "Create account"}
       </button>
 
-      <p className="text-center text-sm text-slate-300">
+      <p className="rb-text-body text-center text-sm">
         Already have an account?{" "}
-        <Link href="/auth/sign-in" className="font-medium text-cyan-100 transition hover:text-cyan-50">
+        <Link href="/auth/sign-in" className="font-medium text-blue-600 transition hover:text-blue-500 dark:text-blue-300 dark:hover:text-blue-200">
           Sign in
         </Link>
       </p>

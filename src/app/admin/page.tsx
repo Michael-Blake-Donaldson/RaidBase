@@ -16,50 +16,50 @@ export default async function AdminPage() {
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <section className="space-y-4">
           {moderationQueue.map((report) => (
-            <article key={report.subject} className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+            <article key={report.subject} className="rb-surface-strong rounded-[28px] p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400">Report target</p>
-                  <h2 className="mt-2 text-xl font-semibold text-white">{report.subject}</h2>
+                  <p className="rb-text-muted text-xs uppercase tracking-[0.28em]">Report target</p>
+                  <h2 className="rb-text-strong mt-2 text-xl font-semibold">{report.subject}</h2>
                 </div>
                 <span className={`rounded-full px-3 py-1 text-xs font-medium ${
                   report.severity === "High"
-                    ? "border border-rose-300/20 bg-rose-300/10 text-rose-100"
+                    ? "rb-badge-danger"
                     : report.severity === "Medium"
-                      ? "border border-amber-300/20 bg-amber-300/10 text-amber-100"
-                      : "border border-cyan-300/20 bg-cyan-300/10 text-cyan-100"
+                      ? "rb-badge-warn"
+                      : "rb-badge-info"
                 }`}>
                   {report.severity} severity
                 </span>
               </div>
-              <p className="mt-4 text-sm text-slate-300">{report.reason}</p>
-              <div className="mt-4 rounded-[22px] border border-white/10 bg-slate-950/45 p-4 text-sm leading-7 text-slate-300">
+              <p className="rb-text-body mt-4 text-sm">{report.reason}</p>
+              <div className="rb-surface-soft rb-text-body mt-4 rounded-[22px] p-4 text-sm leading-7">
                 {report.evidence}
               </div>
-              <p className="mt-4 text-sm text-slate-400">Current status: {report.status}</p>
+              <p className="rb-text-muted mt-4 text-sm">Current status: {report.status}</p>
             </article>
           ))}
         </section>
 
-        <aside className="space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <aside className="rb-surface-strong space-y-4 rounded-[28px] p-6">
           <div className="flex items-center gap-3">
-            <ShieldAlert className="h-5 w-5 text-cyan-200" />
-            <h2 className="text-xl font-semibold text-white">Moderation principles</h2>
+            <ShieldAlert className="rb-icon h-5 w-5" />
+            <h2 className="rb-text-strong text-xl font-semibold">Moderation principles</h2>
           </div>
-          <div className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4 text-sm leading-7 text-slate-300">
+          <div className="rb-surface-soft rb-text-body rounded-[22px] p-4 text-sm leading-7">
             Aggregated reputation stays public; direct negative comments stay operational. That reduces dogpiling while keeping useful signals intact.
           </div>
-          <div className="rounded-[22px] border border-white/10 bg-slate-950/45 p-4 text-sm leading-7 text-slate-300">
+          <div className="rb-surface-soft rb-text-body rounded-[22px] p-4 text-sm leading-7">
             Reviewer trust, duplicate detection, rate limits, and burst analysis make abuse visible before it reshapes public trust surfaces.
           </div>
-          <div className="rounded-[22px] border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm leading-7 text-cyan-100">
+          <div className="rb-badge-info rounded-[22px] p-4 text-sm leading-7">
             <div className="mb-2 flex items-center gap-2">
               <TimerReset className="h-4 w-4" />
               Moderator SLA target
             </div>
             High-severity queues should be reviewed inside 30 minutes during peak hours.
           </div>
-          <div className="rounded-[22px] border border-rose-300/20 bg-rose-300/10 p-4 text-sm leading-7 text-rose-100">
+          <div className="rb-badge-danger rounded-[22px] p-4 text-sm leading-7">
             <div className="mb-2 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
               Public launch rule

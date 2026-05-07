@@ -2,6 +2,7 @@ import { SiteShell } from "@/components/site-shell";
 import { SettingsClient } from "@/components/settings-client";
 import { getServerAuthSession } from "@/lib/auth/session";
 import { db } from "@/lib/db";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export default async function SettingsPage() {
   const session = await getServerAuthSession();
 
   if (!session?.user?.id) {
-    throw new Error("Authenticated session required for settings page.");
+    redirect("/auth/sign-in?callbackUrl=%2Fsettings");
   }
 
   const profile = await db.profile.findUnique({
@@ -27,7 +28,7 @@ export default async function SettingsPage() {
   });
 
   if (!profile) {
-    throw new Error("User profile missing. Run onboarding before accessing settings.");
+    redirect("/auth/register");
   }
 
   return (

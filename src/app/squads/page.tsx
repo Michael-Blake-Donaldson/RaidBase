@@ -16,20 +16,20 @@ export default async function SquadsPage() {
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <section className="grid gap-4">
           {squads.map((squad) => (
-            <article key={squad.name} className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+            <article key={squad.name} className="rb-surface-strong rounded-[28px] p-6">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-2xl font-semibold text-white">{squad.name}</h2>
-                  <p className="mt-2 text-sm text-slate-400">{squad.game} • {squad.members} active members • {squad.status}</p>
+                  <h2 className="rb-text-strong text-2xl font-semibold">{squad.name}</h2>
+                  <p className="rb-text-muted mt-2 text-sm">{squad.game} • {squad.members} active members • {squad.status}</p>
                 </div>
-                <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-semibold text-cyan-100">
+                <span className="rb-badge-info rounded-full px-3 py-1 text-sm font-semibold">
                   {squad.synergy}% synergy
                 </span>
               </div>
-              <p className="mt-4 text-sm leading-7 text-slate-300">{squad.activity}</p>
+              <p className="rb-text-body mt-4 text-sm leading-7">{squad.activity}</p>
               <div className="mt-5 flex flex-wrap gap-2">
                 {squad.openRoles.map((role) => (
-                  <span key={role} className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1 text-xs text-slate-200">
+                  <span key={role} className="rb-pill rounded-full px-3 py-1 text-xs">
                     {role}
                   </span>
                 ))}
@@ -38,29 +38,29 @@ export default async function SquadsPage() {
           ))}
         </section>
 
-        <aside className="space-y-4 rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <aside className="rb-surface-strong space-y-4 rounded-[28px] p-6">
           <div className="flex items-center gap-3">
-            <Users2 className="h-5 w-5 text-cyan-200" />
-            <h2 className="text-xl font-semibold text-white">Squad health roadmap</h2>
+            <Users2 className="rb-icon h-5 w-5" />
+            <h2 className="rb-text-strong text-xl font-semibold">Squad health roadmap</h2>
           </div>
-          <div className="rounded-[24px] border border-white/10 bg-slate-950/45 p-4 text-sm leading-7 text-slate-300">
+          <div className="rb-surface-soft rb-text-body rounded-[24px] p-4 text-sm leading-7">
             V1 tracks repeat sessions, mutual positive reviews, and low conflict reports. Later versions can predict fit and monitor attendance trends automatically.
           </div>
-          <div className="rounded-[24px] border border-white/10 bg-slate-950/45 p-4">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
-              <Activity className="h-4 w-4 text-cyan-200" />
+          <div className="rb-surface-soft rounded-[24px] p-4">
+            <p className="rb-text-strong mb-2 flex items-center gap-2 text-sm font-medium">
+              <Activity className="rb-icon h-4 w-4" />
               Shared context
             </p>
-            <p className="text-sm leading-7 text-slate-300">
+            <p className="rb-text-body text-sm leading-7">
               Session history, strategy notes, roles, recurring teammates, and featured clips give squads memory instead of making every night start from zero.
             </p>
           </div>
-          <div className="rounded-[24px] border border-emerald-300/20 bg-emerald-300/10 p-4">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium text-emerald-100">
+          <div className="rb-badge-success rounded-[24px] p-4">
+            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
               <ShieldCheck className="h-4 w-4" />
               Trust controls
             </p>
-            <p className="text-sm leading-7 text-slate-200">
+            <p className="text-sm leading-7">
               Invite-only privacy, blocked-user enforcement, and moderation escalation keep squads from turning into ungoverned Discord clones.
             </p>
           </div>

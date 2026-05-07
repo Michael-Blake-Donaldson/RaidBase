@@ -46,19 +46,14 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
   const [syncedAt, setSyncedAt] = useState(lastSyncedAt);
   const [isOpeningBilling, setIsOpeningBilling] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
-  const [themeMode, setThemeMode] = useState<ThemeMode>("day");
-
-  useEffect(() => {
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     if (typeof window === "undefined") {
-      return;
+      return "day";
     }
 
     const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-
-    if (stored === "night" || stored === "day") {
-      setThemeMode(stored);
-    }
-  }, []);
+    return stored === "night" || stored === "day" ? stored : "day";
+  });
 
   useEffect(() => {
     document.documentElement.dataset.rbTheme = themeMode;
@@ -164,77 +159,77 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-      <section className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
-        <h2 className="text-2xl font-semibold text-white">Profile preferences</h2>
-        <p className="mt-2 text-sm text-gray-300">These values update your account profile and are used for matchmaking relevance.</p>
+      <section className="rb-surface-strong rounded-[28px] p-6">
+        <h2 className="rb-text-strong text-2xl font-semibold">Profile preferences</h2>
+        <p className="rb-text-body mt-2 text-sm">These values update your account profile and are used for matchmaking relevance.</p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <label className="space-y-2 text-sm text-gray-200">
+          <label className="rb-text-body space-y-2 text-sm">
             <span>Display name</span>
             <input
               value={form.displayName}
               onChange={(event) => setForm((current) => ({ ...current, displayName: event.target.value }))}
-              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
+              className="rb-field w-full rounded-xl px-3 py-2"
               maxLength={40}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-gray-200">
+          <label className="rb-text-body space-y-2 text-sm">
             <span>Region</span>
             <input
               value={form.region}
               onChange={(event) => setForm((current) => ({ ...current, region: event.target.value }))}
-              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
+              className="rb-field w-full rounded-xl px-3 py-2"
               maxLength={64}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-gray-200">
+          <label className="rb-text-body space-y-2 text-sm">
             <span>Timezone</span>
             <input
               value={form.timezone}
               onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))}
-              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
+              className="rb-field w-full rounded-xl px-3 py-2"
               maxLength={64}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-gray-200">
+          <label className="rb-text-body space-y-2 text-sm">
             <span>Mic preference</span>
             <input
               value={form.micPreference}
               onChange={(event) => setForm((current) => ({ ...current, micPreference: event.target.value }))}
-              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
+              className="rb-field w-full rounded-xl px-3 py-2"
               maxLength={64}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-gray-200 sm:col-span-2">
+          <label className="rb-text-body space-y-2 text-sm sm:col-span-2">
             <span>Language</span>
             <input
               value={form.language}
               onChange={(event) => setForm((current) => ({ ...current, language: event.target.value }))}
-              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
+              className="rb-field w-full rounded-xl px-3 py-2"
               maxLength={64}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-gray-200 sm:col-span-2">
+          <label className="rb-text-body space-y-2 text-sm sm:col-span-2">
             <span>Schedule</span>
             <input
               value={form.schedule}
               onChange={(event) => setForm((current) => ({ ...current, schedule: event.target.value }))}
-              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
+              className="rb-field w-full rounded-xl px-3 py-2"
               maxLength={160}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-gray-200 sm:col-span-2">
+          <label className="rb-text-body space-y-2 text-sm sm:col-span-2">
             <span>Bio</span>
             <textarea
               value={form.bio}
               onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))}
-              className="h-28 w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
+              className="rb-field h-28 w-full rounded-xl px-3 py-2"
               maxLength={400}
             />
           </label>
@@ -245,7 +240,7 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
             type="button"
             onClick={onSaveProfile}
             disabled={isSaving || !hasUnsavedChanges}
-            className="rounded-full bg-cyan-300 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rb-button-primary rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSaving ? "Saving..." : "Save settings"}
           </button>
@@ -253,7 +248,7 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
             type="button"
             onClick={onResetUnsavedChanges}
             disabled={isSaving || !hasUnsavedChanges}
-            className="rounded-full border border-blue-400/40 bg-blue-900/30 px-4 py-2.5 text-sm font-medium text-blue-100 transition hover:bg-blue-900/50 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rb-button-subtle rounded-full px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70"
           >
             Reset unsaved
           </button>
@@ -261,7 +256,7 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
             type="button"
             onClick={onUndoLastSave}
             disabled={isSaving || !previousSavedForm}
-            className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2.5 text-sm font-medium text-emerald-100 transition hover:bg-emerald-300/20 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rb-badge-success rounded-full px-4 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70"
           >
             Undo last save
           </button>
@@ -271,17 +266,17 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
       </section>
 
       <aside className="space-y-4">
-        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
-          <h3 className="text-xl font-semibold text-white">Appearance</h3>
-          <p className="mt-2 text-sm text-gray-300">Choose how Raidbase looks on this device.</p>
+        <article className="rb-surface-strong rounded-[28px] p-6">
+          <h3 className="rb-text-strong text-xl font-semibold">Appearance</h3>
+          <p className="rb-text-body mt-2 text-sm">Choose how Raidbase looks on this device.</p>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => setThemeMode("day")}
               className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
                 themeMode === "day"
-                  ? "border-blue-300 bg-blue-100 text-blue-900"
-                  : "border-gray-400/30 bg-gray-800/50 text-gray-200 hover:bg-gray-800/70"
+                  ? "rb-badge-info"
+                  : "rb-button-secondary"
               }`}
               aria-pressed={themeMode === "day"}
             >
@@ -292,8 +287,8 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
               onClick={() => setThemeMode("night")}
               className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
                 themeMode === "night"
-                  ? "border-blue-300 bg-blue-100 text-blue-900"
-                  : "border-gray-400/30 bg-gray-800/50 text-gray-200 hover:bg-gray-800/70"
+                  ? "rb-badge-info"
+                  : "rb-button-secondary"
               }`}
               aria-pressed={themeMode === "night"}
             >
@@ -302,60 +297,60 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
           </div>
         </article>
 
-        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
-          <h3 className="text-xl font-semibold text-white">Account</h3>
-          <dl className="mt-4 space-y-2 text-sm text-gray-300">
+        <article className="rb-surface-strong rounded-[28px] p-6">
+          <h3 className="rb-text-strong text-xl font-semibold">Account</h3>
+          <dl className="rb-text-body mt-4 space-y-2 text-sm">
             <div>
-              <dt className="text-gray-400">Username</dt>
+              <dt className="rb-text-muted">Username</dt>
               <dd>{username}</dd>
             </div>
             <div>
-              <dt className="text-gray-400">Email</dt>
+              <dt className="rb-text-muted">Email</dt>
               <dd>{email || "No email available"}</dd>
             </div>
             <div>
-              <dt className="text-gray-400">Last synced</dt>
+              <dt className="rb-text-muted">Last synced</dt>
               <dd>{new Date(syncedAt).toLocaleString()}</dd>
             </div>
           </dl>
         </article>
 
-        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
-          <h3 className="text-xl font-semibold text-white">Billing</h3>
-          <p className="mt-2 text-sm text-gray-300">Manage your subscription via Stripe portal when billing is configured.</p>
+        <article className="rb-surface-strong rounded-[28px] p-6">
+          <h3 className="rb-text-strong text-xl font-semibold">Billing</h3>
+          <p className="rb-text-body mt-2 text-sm">Manage your subscription via Stripe portal when billing is configured.</p>
           <button
             type="button"
             onClick={onOpenBillingPortal}
             disabled={isOpeningBilling}
-            className="mt-4 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rb-button-subtle mt-4 rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isOpeningBilling ? "Opening..." : "Open billing portal"}
           </button>
           {billingError ? <p className="mt-3 text-sm text-rose-200">{billingError}</p> : null}
         </article>
 
-        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
-          <h3 className="text-xl font-semibold text-white">Session</h3>
-          <p className="mt-2 text-sm text-gray-300">Sign out of the current account on this device.</p>
+        <article className="rb-surface-strong rounded-[28px] p-6">
+          <h3 className="rb-text-strong text-xl font-semibold">Session</h3>
+          <p className="rb-text-body mt-2 text-sm">Sign out of the current account on this device.</p>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="mt-4 rounded-full border border-blue-400/40 bg-blue-900/30 px-4 py-2 text-sm font-medium text-blue-100 transition hover:bg-blue-900/50"
+            className="rb-button-subtle mt-4 rounded-full px-4 py-2 text-sm font-medium transition"
           >
             Sign out
           </button>
         </article>
 
-        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
-          <h3 className="text-xl font-semibold text-white">Help and trust</h3>
-          <p className="mt-2 text-sm text-gray-300">
+        <article className="rb-surface-strong rounded-[28px] p-6">
+          <h3 className="rb-text-strong text-xl font-semibold">Help and trust</h3>
+          <p className="rb-text-body mt-2 text-sm">
             Need support or want full transparency on trust scoring? Start with these docs.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <a href="/privacy" className="rounded-full border border-gray-400/30 bg-gray-800/40 px-3 py-1.5 text-xs text-gray-300 transition hover:bg-gray-800/60">
+            <a href="/privacy" className="rb-button-secondary rounded-full px-3 py-1.5 text-xs transition">
               Privacy policy
             </a>
-            <a href="/terms" className="rounded-full border border-gray-400/30 bg-gray-800/40 px-3 py-1.5 text-xs text-gray-300 transition hover:bg-gray-800/60">
+            <a href="/terms" className="rb-button-secondary rounded-full px-3 py-1.5 text-xs transition">
               Terms
             </a>
           </div>

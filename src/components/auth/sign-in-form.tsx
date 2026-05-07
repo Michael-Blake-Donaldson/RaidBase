@@ -36,26 +36,26 @@ export function SignInForm() {
 
   return (
     <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-      <label className="block space-y-2 text-sm text-slate-200">
+      <label className="rb-text-body block space-y-2 text-sm">
         <span>Email</span>
         <input
           type="email"
           required
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+          className="rb-field w-full rounded-xl px-3 py-2"
           autoComplete="email"
         />
       </label>
 
-      <label className="block space-y-2 text-sm text-slate-200">
+      <label className="rb-text-body block space-y-2 text-sm">
         <span>Password</span>
         <input
           type="password"
           required
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+          className="rb-field w-full rounded-xl px-3 py-2"
           autoComplete="current-password"
         />
       </label>
@@ -65,14 +65,14 @@ export function SignInForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-cyan-300 px-4 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-70"
+        className="rb-button-primary w-full rounded-full px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70"
       >
         {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
 
-      <p className="text-center text-sm text-slate-300">
+      <p className="rb-text-body text-center text-sm">
         Need an account?{" "}
-        <Link href="/auth/register" className="font-medium text-cyan-100 transition hover:text-cyan-50">
+        <Link href="/auth/register" className="font-medium text-blue-600 transition hover:text-blue-500 dark:text-blue-300 dark:hover:text-blue-200">
           Register
         </Link>
       </p>

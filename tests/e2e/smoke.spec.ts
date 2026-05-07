@@ -3,8 +3,8 @@ import { expect, test } from "@playwright/test";
 test("homepage renders primary CTAs", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByRole("heading", { name: "Find your next reliable stack in under 60 seconds." })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open LFG now" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Stop queueing with strangers who ruin the night\./i })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Browse LFG board" })).toBeVisible();
 });
 
 test("lfg page renders filter stack and listings", async ({ page }) => {
@@ -12,6 +12,13 @@ test("lfg page renders filter stack and listings", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "Filter stack" })).toBeVisible();
   await expect(page.getByText("Roles needed").first()).toBeVisible();
+});
+
+test("squads page renders core squad intelligence", async ({ page }) => {
+  await page.goto("/squads");
+
+  await expect(page.getByRole("heading", { name: "Give good teams a home that survives one session." })).toBeVisible();
+  await expect(page.getByText("Session and review activity synced")).toBeVisible();
 });
 
 test("profile page renders trust badges", async ({ page }) => {

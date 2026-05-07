@@ -10,26 +10,26 @@ type GlobalErrorProps = {
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-[linear-gradient(180deg,#07111f_0%,#091425_45%,#050b14_100%)] p-6 text-slate-100">
-        <main className="mx-auto mt-12 max-w-2xl rounded-[28px] border border-red-400/30 bg-red-400/10 p-8">
-          <h1 className="text-3xl font-semibold text-white">Unexpected application error</h1>
-          <p className="mt-4 text-sm leading-7 text-slate-200">
+      <body className="rb-auth-page p-6">
+        <main className="mx-auto mt-12 max-w-2xl rounded-[28px] border border-red-400/35 bg-red-50/95 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.12)]">
+          <h1 className="rb-text-strong text-3xl font-semibold">Unexpected application error</h1>
+          <p className="rb-text-body mt-4 text-sm leading-7">
             A critical error occurred. Retry the operation. If the problem continues, capture this digest and investigate server logs.
           </p>
           {error.digest ? (
-            <p className="mt-3 text-xs text-slate-300">Error digest: {error.digest}</p>
+            <p className="rb-text-muted mt-3 text-xs">Error digest: {error.digest}</p>
           ) : null}
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
               onClick={reset}
-              className="rounded-full bg-cyan-300 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200"
+              className="rb-button-primary rounded-full px-5 py-2.5 text-sm font-semibold transition"
             >
               Retry
             </button>
             <Link
               href="/"
-              className="rounded-full border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+              className="rb-button-secondary rounded-full px-5 py-2.5 text-sm font-medium transition"
             >
               Return home
             </Link>

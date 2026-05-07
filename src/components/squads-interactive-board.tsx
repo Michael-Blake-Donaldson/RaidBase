@@ -112,40 +112,40 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
   return (
     <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
       <section className="grid gap-4">
-        <article className="border border-cyan-300/20 bg-cyan-300/10 p-6">
-          <h2 className="text-2xl font-semibold text-white">Create your squad</h2>
-          <p className="mt-2 text-sm text-slate-100">
+        <article className="rb-surface-strong p-6">
+          <h2 className="rb-text-strong text-2xl font-semibold">Create your squad</h2>
+          <p className="rb-text-body mt-2 text-sm">
             This creates a real squad in the database, adds you as owner, and generates an invite code when privacy requires it.
           </p>
 
           {!isAuthenticated ? (
-            <p className="mt-3 text-sm text-cyan-100">
-              <Link href="/auth/register" className="font-semibold underline decoration-cyan-200/60 underline-offset-4">
+            <p className="rb-text-body mt-3 text-sm">
+              <Link href="/auth/register" className="font-semibold text-blue-600 underline decoration-blue-300/60 underline-offset-4 dark:text-blue-300">
                 Create an account
               </Link>{" "}
-              or <Link href="/auth/sign-in" className="font-semibold underline decoration-cyan-200/60 underline-offset-4">sign in</Link> to create squads.
+              or <Link href="/auth/sign-in" className="font-semibold text-blue-600 underline decoration-blue-300/60 underline-offset-4 dark:text-blue-300">sign in</Link> to create squads.
             </p>
           ) : null}
 
           <form className="mt-4 grid gap-3 lg:grid-cols-2" onSubmit={onCreateSquad}>
-            <label className="space-y-1 text-xs text-slate-200 lg:col-span-2">
+            <label className="rb-text-body space-y-1 text-xs lg:col-span-2">
               <span>Squad name</span>
               <input
                 value={form.name}
                 onChange={(event) => setForm((current) => ({ ...current, name: event.target.value }))}
                 minLength={3}
                 maxLength={40}
-                className="w-full rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2 text-sm text-white"
+                className="rb-field w-full rounded-xl px-3 py-2 text-sm"
                 placeholder="Example: Night Circuit Tactical"
               />
             </label>
 
-            <label className="space-y-1 text-xs text-slate-200">
+            <label className="rb-text-body space-y-1 text-xs">
               <span>Game</span>
               <select
                 value={form.gameSlug}
                 onChange={(event) => setForm((current) => ({ ...current, gameSlug: event.target.value }))}
-                className="w-full rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2 text-sm text-white"
+                className="rb-field w-full rounded-xl px-3 py-2 text-sm"
               >
                 {gameChoices.map((choice) => (
                   <option key={choice.slug} value={choice.slug}>
@@ -155,7 +155,7 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
               </select>
             </label>
 
-            <label className="space-y-1 text-xs text-slate-200">
+            <label className="rb-text-body space-y-1 text-xs">
               <span>Privacy</span>
               <select
                 value={form.privacy}
@@ -165,7 +165,7 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
                     privacy: event.target.value as "PUBLIC" | "PRIVATE" | "INVITE_ONLY",
                   }))
                 }
-                className="w-full rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2 text-sm text-white"
+                className="rb-field w-full rounded-xl px-3 py-2 text-sm"
               >
                 <option value="PUBLIC">Public</option>
                 <option value="INVITE_ONLY">Invite only</option>
@@ -173,13 +173,13 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
               </select>
             </label>
 
-            <label className="space-y-1 text-xs text-slate-200 lg:col-span-2">
+            <label className="rb-text-body space-y-1 text-xs lg:col-span-2">
               <span>Description</span>
               <textarea
                 value={form.description}
                 onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))}
                 maxLength={240}
-                className="h-24 w-full rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2 text-sm text-white"
+                className="rb-field h-24 w-full rounded-xl px-3 py-2 text-sm"
                 placeholder="What your squad values, plays, and schedules for."
               />
             </label>
@@ -188,7 +188,7 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
               <button
                 type="submit"
                 disabled={!isAuthenticated || isCreating || form.name.trim().length < 3}
-                className="rounded-full bg-cyan-300 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rb-button-primary rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isCreating ? "Creating..." : "Create squad"}
               </button>
@@ -200,32 +200,32 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
         </article>
 
         {squads.map((squad) => (
-          <article key={squad.id} className="border border-white/10 bg-slate-950/30 p-6">
+          <article key={squad.id} className="rb-surface-strong p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-2xl font-semibold text-white">{squad.name}</h2>
-                <p className="mt-2 text-sm text-slate-400">
+                <h2 className="rb-text-strong text-2xl font-semibold">{squad.name}</h2>
+                <p className="rb-text-muted mt-2 text-sm">
                   {squad.game} • {squad.members} active members • {squad.status}
                 </p>
               </div>
-              <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-sm font-semibold text-cyan-100">
+              <span className="rb-badge-info rounded-full px-3 py-1 text-sm font-semibold">
                 {squad.synergy}% synergy
               </span>
             </div>
 
-            <p className="mt-4 text-sm leading-7 text-slate-300">{squad.activity}</p>
+            <p className="rb-text-body mt-4 text-sm leading-7">{squad.activity}</p>
 
             <div className="mt-5 flex flex-wrap gap-2">
               {squad.openRoles.map((role) => (
-                <span key={role} className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1 text-xs text-slate-200">
+                <span key={role} className="rb-pill rounded-full px-3 py-1 text-xs">
                   {role}
                 </span>
               ))}
             </div>
 
-            <div className="mt-4 space-y-3 border border-white/10 bg-slate-950/55 p-4">
-              <p className="text-xs text-slate-300">
-                Privacy: <span className="font-semibold text-white">{squad.privacy}</span>
+            <div className="rb-surface-soft mt-4 space-y-3 p-4">
+              <p className="rb-text-body text-xs">
+                Privacy: <span className="rb-text-strong font-semibold">{squad.privacy}</span>
               </p>
 
               {squad.inviteCodeRequired ? (
@@ -233,7 +233,7 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
                   value={joinCodes[squad.id] ?? ""}
                   onChange={(event) => setJoinCodes((current) => ({ ...current, [squad.id]: event.target.value.toUpperCase() }))}
                   placeholder="Enter invite code"
-                  className="w-full rounded-xl border border-white/15 bg-slate-900/60 px-3 py-2 text-sm text-white"
+                  className="rb-field w-full rounded-xl px-3 py-2 text-sm"
                 />
               ) : null}
 
@@ -242,13 +242,13 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
                   type="button"
                   onClick={() => onJoinSquad(squad.id)}
                   disabled={Boolean(isJoining[squad.id])}
-                  className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-300/20 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="rb-button-subtle rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isJoining[squad.id] ? "Joining..." : "Join squad"}
                 </button>
               ) : (
-                <p className="text-sm text-slate-300">
-                  <Link href="/auth/sign-in" className="font-medium text-cyan-100 hover:text-cyan-50">
+                <p className="rb-text-body text-sm">
+                  <Link href="/auth/sign-in" className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-300 dark:hover:text-blue-200">
                     Sign in
                   </Link>{" "}
                   to join this squad.
@@ -259,20 +259,20 @@ export function SquadsInteractiveBoard({ initialSquads, isAuthenticated }: Squad
         ))}
       </section>
 
-      <aside className="space-y-4 border border-white/10 bg-slate-950/30 p-6 xl:sticky xl:top-28 xl:h-fit">
+      <aside className="rb-surface-strong space-y-4 p-6 xl:sticky xl:top-28 xl:h-fit">
         <div className="flex items-center gap-3">
-          <Users2 className="h-5 w-5 text-cyan-200" />
-          <h2 className="text-xl font-semibold text-white">User-first squad controls</h2>
+          <Users2 className="rb-icon h-5 w-5" />
+          <h2 className="rb-text-strong text-xl font-semibold">User-first squad controls</h2>
         </div>
-        <div className="border border-white/10 bg-slate-950/55 p-4 text-sm leading-7 text-slate-300">
+        <div className="rb-surface-soft rb-text-body p-4 text-sm leading-7">
           Users can now create squads, choose privacy, and join immediately when rules allow. Invite-only squads enforce code entry before membership.
         </div>
-        <div className="border border-emerald-300/20 bg-emerald-300/10 p-4">
-          <p className="mb-2 flex items-center gap-2 text-sm font-medium text-emerald-100">
+        <div className="rb-badge-success p-4">
+          <p className="mb-2 flex items-center gap-2 text-sm font-medium">
             <ShieldCheck className="h-4 w-4" />
             Safety and trust
           </p>
-          <p className="text-sm leading-7 text-slate-200">
+          <p className="text-sm leading-7">
             Auth checks, rate limits, duplicate-membership prevention, and privacy-aware join rules are enforced server-side.
           </p>
         </div>
