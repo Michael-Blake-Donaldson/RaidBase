@@ -11,21 +11,20 @@ import {
   getModerationQueueFromDb,
   getRecommendedPlayersFromDb,
   getSquadsFromDb,
-  getViewerProfileContext,
 } from "@/server/queries/dashboard";
 
-export async function readPlayers(viewerUserId?: string | null) {
+export async function readPlayers() {
   try {
-    const data = await getRecommendedPlayersFromDb(viewerUserId);
+    const data = await getRecommendedPlayersFromDb();
     return data.length > 0 ? data : recommendedPlayers;
   } catch {
     return recommendedPlayers;
   }
 }
 
-export async function readLfgPosts(viewerUserId?: string | null) {
+export async function readLfgPosts() {
   try {
-    const data = await getLfgPostsFromDb(viewerUserId);
+    const data = await getLfgPostsFromDb();
     return data.length > 0 ? data : lfgPosts;
   } catch {
     return lfgPosts;
@@ -56,13 +55,5 @@ export async function readModerationQueue() {
     return data.length > 0 ? data : moderationQueue;
   } catch {
     return moderationQueue;
-  }
-}
-
-export async function readViewerContext(viewerUserId?: string | null) {
-  try {
-    return await getViewerProfileContext(viewerUserId);
-  } catch {
-    return null;
   }
 }

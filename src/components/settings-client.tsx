@@ -1,7 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
+
+const THEME_STORAGE_KEY = "raidbase-theme";
+
+type ThemeMode = "day" | "night";
 
 type ProfileSettings = {
   displayName: string;
@@ -42,6 +46,24 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
   const [syncedAt, setSyncedAt] = useState(lastSyncedAt);
   const [isOpeningBilling, setIsOpeningBilling] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
+  const [themeMode, setThemeMode] = useState<ThemeMode>("day");
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+
+    if (stored === "night" || stored === "day") {
+      setThemeMode(stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.rbTheme = themeMode;
+    window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
+  }, [themeMode]);
 
   const hasUnsavedChanges = useMemo(
     () => JSON.stringify(form) !== JSON.stringify(baselineForm),
@@ -142,77 +164,77 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-      <section className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+      <section className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
         <h2 className="text-2xl font-semibold text-white">Profile preferences</h2>
-        <p className="mt-2 text-sm text-slate-300">These values update your account profile and are used for matchmaking relevance.</p>
+        <p className="mt-2 text-sm text-gray-300">These values update your account profile and are used for matchmaking relevance.</p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <label className="space-y-2 text-sm text-slate-200">
+          <label className="space-y-2 text-sm text-gray-200">
             <span>Display name</span>
             <input
               value={form.displayName}
               onChange={(event) => setForm((current) => ({ ...current, displayName: event.target.value }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
               maxLength={40}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-slate-200">
+          <label className="space-y-2 text-sm text-gray-200">
             <span>Region</span>
             <input
               value={form.region}
               onChange={(event) => setForm((current) => ({ ...current, region: event.target.value }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
               maxLength={64}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-slate-200">
+          <label className="space-y-2 text-sm text-gray-200">
             <span>Timezone</span>
             <input
               value={form.timezone}
               onChange={(event) => setForm((current) => ({ ...current, timezone: event.target.value }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
               maxLength={64}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-slate-200">
+          <label className="space-y-2 text-sm text-gray-200">
             <span>Mic preference</span>
             <input
               value={form.micPreference}
               onChange={(event) => setForm((current) => ({ ...current, micPreference: event.target.value }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
               maxLength={64}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-slate-200 sm:col-span-2">
+          <label className="space-y-2 text-sm text-gray-200 sm:col-span-2">
             <span>Language</span>
             <input
               value={form.language}
               onChange={(event) => setForm((current) => ({ ...current, language: event.target.value }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
               maxLength={64}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-slate-200 sm:col-span-2">
+          <label className="space-y-2 text-sm text-gray-200 sm:col-span-2">
             <span>Schedule</span>
             <input
               value={form.schedule}
               onChange={(event) => setForm((current) => ({ ...current, schedule: event.target.value }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
               maxLength={160}
             />
           </label>
 
-          <label className="space-y-2 text-sm text-slate-200 sm:col-span-2">
+          <label className="space-y-2 text-sm text-gray-200 sm:col-span-2">
             <span>Bio</span>
             <textarea
               value={form.bio}
               onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))}
-              className="h-28 w-full rounded-xl border border-white/15 bg-slate-950/50 px-3 py-2 text-white"
+              className="h-28 w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-white"
               maxLength={400}
             />
           </label>
@@ -231,7 +253,7 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
             type="button"
             onClick={onResetUnsavedChanges}
             disabled={isSaving || !hasUnsavedChanges}
-            className="rounded-full border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-70"
+            className="rounded-full border border-blue-400/40 bg-blue-900/30 px-4 py-2.5 text-sm font-medium text-blue-100 transition hover:bg-blue-900/50 disabled:cursor-not-allowed disabled:opacity-70"
           >
             Reset unsaved
           </button>
@@ -249,27 +271,58 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
       </section>
 
       <aside className="space-y-4">
-        <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
+          <h3 className="text-xl font-semibold text-white">Appearance</h3>
+          <p className="mt-2 text-sm text-gray-300">Choose how Raidbase looks on this device.</p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setThemeMode("day")}
+              className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                themeMode === "day"
+                  ? "border-blue-300 bg-blue-100 text-blue-900"
+                  : "border-gray-400/30 bg-gray-800/50 text-gray-200 hover:bg-gray-800/70"
+              }`}
+              aria-pressed={themeMode === "day"}
+            >
+              Day
+            </button>
+            <button
+              type="button"
+              onClick={() => setThemeMode("night")}
+              className={`rounded-xl border px-3 py-2 text-sm font-medium transition ${
+                themeMode === "night"
+                  ? "border-blue-300 bg-blue-100 text-blue-900"
+                  : "border-gray-400/30 bg-gray-800/50 text-gray-200 hover:bg-gray-800/70"
+              }`}
+              aria-pressed={themeMode === "night"}
+            >
+              Night
+            </button>
+          </div>
+        </article>
+
+        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
           <h3 className="text-xl font-semibold text-white">Account</h3>
-          <dl className="mt-4 space-y-2 text-sm text-slate-300">
+          <dl className="mt-4 space-y-2 text-sm text-gray-300">
             <div>
-              <dt className="text-slate-400">Username</dt>
+              <dt className="text-gray-400">Username</dt>
               <dd>{username}</dd>
             </div>
             <div>
-              <dt className="text-slate-400">Email</dt>
+              <dt className="text-gray-400">Email</dt>
               <dd>{email || "No email available"}</dd>
             </div>
             <div>
-              <dt className="text-slate-400">Last synced</dt>
+              <dt className="text-gray-400">Last synced</dt>
               <dd>{new Date(syncedAt).toLocaleString()}</dd>
             </div>
           </dl>
         </article>
 
-        <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
           <h3 className="text-xl font-semibold text-white">Billing</h3>
-          <p className="mt-2 text-sm text-slate-300">Manage your subscription via Stripe portal when billing is configured.</p>
+          <p className="mt-2 text-sm text-gray-300">Manage your subscription via Stripe portal when billing is configured.</p>
           <button
             type="button"
             onClick={onOpenBillingPortal}
@@ -281,28 +334,28 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
           {billingError ? <p className="mt-3 text-sm text-rose-200">{billingError}</p> : null}
         </article>
 
-        <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
           <h3 className="text-xl font-semibold text-white">Session</h3>
-          <p className="mt-2 text-sm text-slate-300">Sign out of the current account on this device.</p>
+          <p className="mt-2 text-sm text-gray-300">Sign out of the current account on this device.</p>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="mt-4 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+            className="mt-4 rounded-full border border-blue-400/40 bg-blue-900/30 px-4 py-2 text-sm font-medium text-blue-100 transition hover:bg-blue-900/50"
           >
             Sign out
           </button>
         </article>
 
-        <article className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+        <article className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
           <h3 className="text-xl font-semibold text-white">Help and trust</h3>
-          <p className="mt-2 text-sm text-slate-300">
+          <p className="mt-2 text-sm text-gray-300">
             Need support or want full transparency on trust scoring? Start with these docs.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <a href="/privacy" className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-white/10">
+            <a href="/privacy" className="rounded-full border border-gray-400/30 bg-gray-800/40 px-3 py-1.5 text-xs text-gray-300 transition hover:bg-gray-800/60">
               Privacy policy
             </a>
-            <a href="/terms" className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-white/10">
+            <a href="/terms" className="rounded-full border border-gray-400/30 bg-gray-800/40 px-3 py-1.5 text-xs text-gray-300 transition hover:bg-gray-800/60">
               Terms
             </a>
           </div>

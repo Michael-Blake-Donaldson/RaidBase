@@ -26,91 +26,8 @@ const statusLabel: Record<ReportStatus, string> = {
   DISMISSED: "Dismissed by moderation",
 };
 
-function timezoneArea(timezone: string) {
-  return timezone.split("/")[0] ?? "";
-}
-
-function playerMatchScore(
-  candidate: { region: string; timezone: string },
-  viewer: { region: string; timezone: string } | null,
-) {
-  if (!viewer) {
-    return 0;
-  }
-
-  let score = 0;
-  if (candidate.region === viewer.region) {
-    score += 40;
-  } else if (candidate.region.split(" ")[0] === viewer.region.split(" ")[0]) {
-    score += 20;
-  }
-
-  if (candidate.timezone === viewer.timezone) {
-    score += 25;
-  } else if (timezoneArea(candidate.timezone) === timezoneArea(viewer.timezone)) {
-    score += 12;
-  }
-
-  return score;
-}
-
-function lfgMatchScore(
-  candidate: { region: string },
-  viewer: { region: string; timezone: string } | null,
-) {
-  if (!viewer) {
-    return 0;
-  }
-
-  if (candidate.region === viewer.region) {
-    return 35;
-  }
-
-  if (candidate.region.split(" ")[0] === viewer.region.split(" ")[0]) {
-    return 15;
-  }
-
-  return 0;
-}
-
-async function getViewerProfile(viewerUserId?: string | null) {
-  if (!viewerUserId) {
-    return null;
-  }
-
-  return db.profile.findUnique({
-    where: { userId: viewerUserId },
-    select: {
-      region: true,
-      timezone: true,
-    },
-  });
-}
-
-export async function getViewerProfileContext(viewerUserId?: string | null) {
-  const viewer = await getViewerProfile(viewerUserId);
-
-  if (!viewer) {
-    return null;
-  }
-
-  return {
-    region: viewer.region,
-    timezone: viewer.timezone,
-  };
-}
-
-export async function getRecommendedPlayersFromDb(viewerUserId?: string | null): Promise<PlayerCard[]> {
-  const viewer = await getViewerProfile(viewerUserId);
-
+export async function getRecommendedPlayersFromDb(): Promise<PlayerCard[]> {
   const profiles = await db.profile.findMany({
-    where: viewerUserId
-      ? {
-          userId: {
-            not: viewerUserId,
-          },
-        }
-      : undefined,
     include: {
       user: {
         include: {
@@ -123,63 +40,42 @@ export async function getRecommendedPlayersFromDb(viewerUserId?: string | null):
         },
       },
     },
-    take: 18,
+    take: 6,
     orderBy: {
       updatedAt: "desc",
     },
   });
 
-  return profiles
-    .map((profile) => {
-      const primaryGame = profile.user.userGames[0];
-      const reputation = profile.user.reputation;
-      const synergy = reputation
-        ? percentile(
-            ((reputation.reliabilityScore + reputation.commsScore + reputation.skillScore + reputation.teamBehaviorScore) /
-              20) *
-              100,
-          )
-        : 0;
+  return profiles.map((profile) => {
+    const primaryGame = profile.user.userGames[0];
+    const reputation = profile.user.reputation;
+    const synergy = reputation
+      ? percentile(
+          ((reputation.reliabilityScore + reputation.commsScore + reputation.skillScore + reputation.teamBehaviorScore) /
+            20) *
+            100,
+        )
+      : 0;
 
-      const publicBadges = reputation?.publicBadges ? jsonStringList(reputation.publicBadges) : [];
+    const publicBadges = reputation?.publicBadges ? jsonStringList(reputation.publicBadges) : [];
 
-      return {
-        card: {
-          username: profile.user.username,
-          displayName: profile.displayName,
-          rank: primaryGame?.rank ?? "Unranked",
-          role: primaryGame?.role ?? "Flex",
-          region: profile.region,
-          mic: profile.micPreference,
-          synergy,
-          reputation: publicBadges.length > 0 ? publicBadges : ["Growing profile"],
-          games: profile.user.userGames.map((entry) => entry.game.name),
-          tagline: profile.bio ?? "Building squad chemistry one session at a time.",
-          schedule: profile.schedule ?? "Schedule not set",
-        } satisfies PlayerCard,
-        matchScore: playerMatchScore(
-          {
-            region: profile.region,
-            timezone: profile.timezone,
-          },
-          viewer,
-        ),
-      };
-    })
-    .sort((a, b) => {
-      if (a.matchScore !== b.matchScore) {
-        return b.matchScore - a.matchScore;
-      }
-
-      return b.card.synergy - a.card.synergy;
-    })
-    .slice(0, 6)
-    .map((entry) => entry.card);
+    return {
+      username: profile.user.username,
+      displayName: profile.displayName,
+      rank: primaryGame?.rank ?? "Unranked",
+      role: primaryGame?.role ?? "Flex",
+      region: profile.region,
+      mic: profile.micPreference,
+      synergy,
+      reputation: publicBadges.length > 0 ? publicBadges : ["Growing profile"],
+      games: profile.user.userGames.map((entry) => entry.game.name),
+      tagline: profile.bio ?? "Building squad chemistry one session at a time.",
+      schedule: profile.schedule ?? "Schedule not set",
+    };
+  });
 }
 
-export async function getLfgPostsFromDb(viewerUserId?: string | null): Promise<LfgCard[]> {
-  const viewer = await getViewerProfile(viewerUserId);
-
+export async function getLfgPostsFromDb(): Promise<LfgCard[]> {
   const posts = await db.lfgPost.findMany({
     where: {
       status: "OPEN",
@@ -193,28 +89,18 @@ export async function getLfgPostsFromDb(viewerUserId?: string | null): Promise<L
     },
   });
 
-  return posts
-    .map((post) => ({
-      id: post.id,
-      title: post.title,
-      game: post.game.name,
-      region: post.region,
-      rank: [post.rankMin, post.rankMax].filter(Boolean).join(" - ") || "All ranks",
-      roles: jsonStringList(post.rolesNeeded),
-      schedule: post.schedule,
-      tone: post.tone,
-      micRequired: post.micRequired,
-      openSpots: Math.max(0, 5 - post.applications.length),
-    }))
-    .sort((a, b) => {
-      const aScore = lfgMatchScore(a, viewer);
-      const bScore = lfgMatchScore(b, viewer);
-      if (aScore !== bScore) {
-        return bScore - aScore;
-      }
-
-      return b.openSpots - a.openSpots;
-    });
+  return posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    game: post.game.name,
+    region: post.region,
+    rank: [post.rankMin, post.rankMax].filter(Boolean).join(" - ") || "All ranks",
+    roles: jsonStringList(post.rolesNeeded),
+    schedule: post.schedule,
+    tone: post.tone,
+    micRequired: post.micRequired,
+    openSpots: Math.max(0, 5 - post.applications.length),
+  }));
 }
 
 export async function getClipsFromDb(): Promise<ClipCard[]> {
@@ -267,7 +153,7 @@ export async function getSquadsFromDb(): Promise<SquadCard[]> {
     status: squad.privacy === "PUBLIC" ? "Open recruitment" : "Invite focused",
     activity: "Session and review activity synced",
     privacy: squad.privacy,
-    inviteCodeRequired: squad.privacy !== "PUBLIC",
+    inviteCodeRequired: Boolean(squad.inviteCode),
   }));
 }
 

@@ -131,12 +131,12 @@ export function SessionPilot({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="rounded-2xl border border-black/10 bg-white/70 p-3 text-xs text-[#4a5561]">
+          <label className="rounded-2xl border border-gray-300 bg-white p-3 text-xs text-[#6b7280]">
             Focus
             <select
               value={state.focus}
               onChange={(event) => setState((current) => ({ ...current, focus: event.target.value as FocusMode }))}
-              className="mt-2 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-[#11151a]"
+              className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-[#0d1117]"
             >
               <option value="competitive">Competitive</option>
               <option value="balanced">Balanced</option>
@@ -144,12 +144,12 @@ export function SessionPilot({
             </select>
           </label>
 
-          <label className="rounded-2xl border border-black/10 bg-white/70 p-3 text-xs text-[#4a5561]">
+          <label className="rounded-2xl border border-gray-300 bg-white p-3 text-xs text-[#6b7280]">
             Session length
             <select
               value={state.length}
               onChange={(event) => setState((current) => ({ ...current, length: event.target.value as SessionLength }))}
-              className="mt-2 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-[#11151a]"
+              className="mt-2 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-[#0d1117]"
             >
               <option value="45">45 min warm-up</option>
               <option value="90">90 min core session</option>
@@ -157,7 +157,7 @@ export function SessionPilot({
             </select>
           </label>
 
-          <label className="flex items-center justify-between rounded-2xl border border-black/10 bg-white/70 p-3 text-xs text-[#4a5561]">
+          <label className="flex items-center justify-between rounded-2xl border border-gray-300 bg-white p-3 text-xs text-[#6b7280]">
             Cinematic mode
             <button
               type="button"
@@ -166,12 +166,12 @@ export function SessionPilot({
               onClick={() => setState((current) => ({ ...current, immersive: !current.immersive }))}
               className={`relative inline-flex h-7 w-12 items-center rounded-full border transition ${
                 state.immersive
-                  ? "border-black/35 bg-black/80"
-                  : "border-black/20 bg-white"
+                  ? "border-gray-700 bg-gray-900"
+                  : "border-gray-300 bg-white"
               }`}
             >
               <span
-                className={`h-5 w-5 rounded-full bg-[#dfe3e8] transition ${
+                className={`h-5 w-5 rounded-full bg-gray-200 transition ${
                   state.immersive ? "translate-x-6" : "translate-x-1"
                 }`}
               />

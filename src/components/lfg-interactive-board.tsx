@@ -220,25 +220,25 @@ export function LfgInteractiveBoard({ initialPosts, isAuthenticated }: LfgIntera
             <input
               value={form.rolesNeeded}
               onChange={(event) => setForm((current) => ({ ...current, rolesNeeded: event.target.value }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-sm text-white"
             />
           </label>
 
-          <label className="space-y-1 text-xs text-slate-200">
+          <label className="space-y-1 text-xs text-gray-300">
             <span>Tone</span>
             <input
               value={form.tone}
               onChange={(event) => setForm((current) => ({ ...current, tone: event.target.value }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-sm text-white"
             />
           </label>
 
-          <label className="space-y-1 text-xs text-slate-200">
+          <label className="space-y-1 text-xs text-gray-300">
             <span>Mic required</span>
             <select
               value={form.micRequired ? "yes" : "no"}
               onChange={(event) => setForm((current) => ({ ...current, micRequired: event.target.value === "yes" }))}
-              className="w-full rounded-xl border border-white/15 bg-slate-950/55 px-3 py-2 text-sm text-white"
+              className="w-full rounded-xl border border-gray-400/30 bg-gray-800/50 px-3 py-2 text-sm text-white"
             >
               <option value="yes">Yes</option>
               <option value="no">No</option>
@@ -282,13 +282,13 @@ export function LfgInteractiveBoard({ initialPosts, isAuthenticated }: LfgIntera
               </p>
               <div className="flex flex-wrap gap-2">
                 {post.roles.map((role) => (
-                  <span key={role} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                  <span key={role} className="rounded-full border border-blue-400/40 bg-blue-900/40 px-3 py-1 text-xs text-blue-100">
                     {role}
                   </span>
                 ))}
               </div>
             </div>
-            <div className="border border-white/10 bg-slate-950/55 p-4">
+            <div className="border border-gray-400/25 bg-gray-800/50 p-4">
               <p className="mb-2 flex items-center gap-2 text-sm font-medium text-white">
                 <TimerReset className="h-4 w-4 text-cyan-200" />
                 Schedule and tone

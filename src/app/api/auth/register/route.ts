@@ -3,33 +3,17 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { REGION_OPTIONS, TIMEZONE_OPTIONS } from "@/lib/profile-options";
 import { validateUsername } from "@/lib/auth/username";
-import { getClientIp } from "@/lib/request";
-import { enforceRateLimit } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   email: z.string().email(),
   username: z.string().min(3).max(24),
   password: z.string().min(8).max(128),
-  region: z.enum(REGION_OPTIONS),
-  timezone: z.enum(TIMEZONE_OPTIONS),
+  region: z.string().min(2).max(64),
+  timezone: z.string().min(2).max(64),
 });
 
 export async function POST(request: Request) {
-  const rateLimit = enforceRateLimit({
-    key: `auth-register:${getClientIp(request)}`,
-    limit: 10,
-    windowMs: 60_000,
-  });
-
-  if (!rateLimit.ok) {
-    return NextResponse.json(
-      { error: "Too many registration attempts. Please wait and try again." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
-    );
-  }
-
   const body = await request.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
 

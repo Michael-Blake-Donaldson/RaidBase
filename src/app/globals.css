@@ -1,19 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #dfe3e8;
-  --foreground: #111316;
-  --surface: #f4f5f7;
-  --surface-2: #eaedf1;
-  --surface-3: #e3e7eb;
-  --accent: #111316;
-  --accent-cyan: #111316;
-  --accent-olive: #7f9f6a;
-  --accent-purple: #8d7da6;
-  --accent-gold: #c6a46f;
-  --accent-mint: #7ab896;
-  --success: #5ba67e;
-  --danger: #bc6468;
+  --background: #f8f9fb;
+  --foreground: #0d1117;
+  --surface: #ffffff;
+  --surface-2: #f6f8fc;
+  --surface-3: #eef1f8;
+  --accent: #0d1117;
+  --accent-cyan: #1e90ff;
+  --accent-olive: #6ba444;
+  --accent-purple: #7c3aed;
+  --accent-gold: #d97706;
+  --accent-mint: #10b981;
+  --success: #059669;
+  --danger: #dc2626;
 }
 
 @theme inline {
@@ -32,12 +32,33 @@ html {
   background: var(--background);
 }
 
+html[data-rb-theme="night"] {
+  color-scheme: dark;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
   line-height: 1.55;
   text-rendering: optimizeLegibility;
+}
+
+.rb-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8f9fb 0%, #f0f3f8 100%);
+  color: #0d1117;
+}
+
+html[data-rb-theme="night"] body {
+  background: #0b1220;
+  color: #e5e7eb;
+}
+
+html[data-rb-theme="night"] .rb-page {
+  background: radial-gradient(circle at 18% -10%, rgba(59, 130, 246, 0.28), transparent 42%), linear-gradient(180deg, #0b1220 0%, #111827 100%);
+  color: #e5e7eb;
+  filter: brightness(0.9) saturate(0.92);
 }
 
 a {
@@ -86,17 +107,29 @@ textarea {
 }
 
 .rb-shell {
-  border: 1px solid rgba(17, 19, 22, 0.08);
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.46));
-  box-shadow: 0 24px 54px rgba(18, 23, 29, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
+  border: 1px solid #e5e7eb;
+  background: linear-gradient(165deg, #ffffff 0%, #f9fafb 100%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+html[data-rb-theme="night"] .rb-shell {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.88) 100%);
+  box-shadow: 0 24px 56px rgba(2, 6, 23, 0.55), inset 0 1px 0 rgba(148, 163, 184, 0.2);
 }
 
 .rb-panel {
-  border: 1px solid rgba(17, 19, 22, 0.08);
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.52));
-  box-shadow: 0 18px 42px rgba(14, 19, 24, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
+  border: 1px solid #e0e7ff;
+  background: linear-gradient(165deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+html[data-rb-theme="night"] .rb-panel {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.82) 100%);
+  box-shadow: 0 22px 48px rgba(2, 6, 23, 0.5), inset 0 1px 0 rgba(148, 163, 184, 0.2);
 }
 
 .rb-gradient-text {
@@ -107,15 +140,17 @@ textarea {
 }
 
 .rb-chip {
-  border: 1px solid rgba(17, 19, 22, 0.08);
-  background: rgba(255, 255, 255, 0.72);
-  color: #20252b;
+  border: 1px solid #c7d2fe;
+  background: #eef2ff;
+  color: #3730a3;
+  font-weight: 500;
 }
 
 .rb-chip-dark {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #0f1114;
-  color: #f4f6f9;
+  border: 1px solid #312e81;
+  background: #4c1d95;
+  color: #f3f4f6;
+  font-weight: 500;
 }
 
 @keyframes rbAmbientDrift {

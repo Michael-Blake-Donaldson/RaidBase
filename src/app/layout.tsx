@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#07111f",
-  colorScheme: "dark",
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({
@@ -62,6 +62,12 @@ export default function RootLayout({
       className={`${inter.variable} ${sora.variable} ${orbitron.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var t=localStorage.getItem('raidbase-theme');document.documentElement.dataset.rbTheme=(t==='night'||t==='day')?t:'day';}catch(e){document.documentElement.dataset.rbTheme='day';}",
+          }}
+        />
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-cyan-300 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-slate-950"

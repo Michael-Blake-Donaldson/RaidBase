@@ -88,7 +88,7 @@ export function HomeIntentSwitcher({ playerCount, lfgCount, squadCount }: HomeIn
           className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
             mode === "solo"
               ? "rb-chip-dark"
-              : "border-black/10 bg-white/70 text-[#3d4650] hover:border-black/20"
+              : "border-gray-300 bg-white text-[#4b5563] hover:border-gray-400 hover:bg-gray-50"
           }`}
         >
           Solo grind
@@ -99,7 +99,7 @@ export function HomeIntentSwitcher({ playerCount, lfgCount, squadCount }: HomeIn
           className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
             mode === "duo"
               ? "rb-chip-dark"
-              : "border-black/10 bg-white/70 text-[#3d4650] hover:border-black/20"
+              : "border-gray-300 bg-white text-[#4b5563] hover:border-gray-400 hover:bg-gray-50"
           }`}
         >
           Duo queue
@@ -110,19 +110,19 @@ export function HomeIntentSwitcher({ playerCount, lfgCount, squadCount }: HomeIn
           className={`rounded-xl border px-3 py-2 text-left text-sm transition ${
             mode === "squad"
               ? "rb-chip-dark"
-              : "border-black/10 bg-white/70 text-[#3d4650] hover:border-black/20"
+              : "border-gray-300 bg-white text-[#4b5563] hover:border-gray-400 hover:bg-gray-50"
           }`}
         >
           Full squad
         </button>
       </div>
 
-      <div className="rounded-2xl border border-black/10 bg-white/75 p-4">
-        <p className="flex items-center gap-2 text-sm font-semibold text-[#12161a]">
-          <Crosshair className="h-4 w-4 text-[#12161a]" />
+      <div className="rounded-2xl border border-gray-300 bg-white p-4">
+        <p className="flex items-center gap-2 text-sm font-semibold text-[#0d1117]">
+          <Crosshair className="h-4 w-4 text-[#0d1117]" />
           {summary.title}
         </p>
-        <p className="mt-2 text-sm leading-7 text-[#3d4650]">{summary.body}</p>
+        <p className="mt-2 text-sm leading-7 text-[#4b5563]">{summary.body}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href={summary.primaryHref}

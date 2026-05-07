@@ -69,15 +69,15 @@ export function FirstSessionChecklist({ username }: FirstSessionChecklistProps) 
   const allComplete = completedCount === defaultSteps.length;
 
   return (
-    <section className="rounded-[28px] border border-white/10 bg-white/5 p-6">
+    <section className="rounded-[28px] border border-gray-400/30 bg-gray-900/60 p-6">
       <div className="mb-5 flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs text-slate-400">First-session success path</p>
+          <p className="text-xs text-gray-400">First-session success path</p>
           <h3 className="mt-2 text-2xl font-semibold text-white">
             {username ? `${username}, start here` : "Start here"}
           </h3>
         </div>
-        <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-xs font-medium text-cyan-100">
+        <span className="rounded-full border border-blue-400/40 bg-blue-600/30 px-3 py-1 text-xs font-medium text-blue-100">
           {completedCount}/{defaultSteps.length} complete
         </span>
       </div>
@@ -87,22 +87,22 @@ export function FirstSessionChecklist({ username }: FirstSessionChecklistProps) 
           const done = Boolean(completed[step.id]);
 
           return (
-            <div key={step.id} className="rounded-2xl border border-white/10 bg-slate-950/45 p-4">
+            <div key={step.id} className="rounded-2xl border border-gray-400/25 bg-gray-800/50 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-2">
                   {done ? (
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-200" aria-hidden />
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-emerald-300" aria-hidden />
                   ) : (
-                    <Circle className="mt-0.5 h-5 w-5 text-slate-400" aria-hidden />
+                    <Circle className="mt-0.5 h-5 w-5 text-gray-500" aria-hidden />
                   )}
                   <div>
                     <p className="text-sm font-medium text-white">{step.label}</p>
-                    <p className="mt-1 text-xs leading-6 text-slate-300">{step.hint}</p>
+                    <p className="mt-1 text-xs leading-6 text-gray-300">{step.hint}</p>
                   </div>
                 </div>
                 <Link
                   href={step.href}
-                  className="whitespace-nowrap rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-cyan-100 transition hover:border-cyan-300/30 hover:bg-cyan-300/10"
+                  className="whitespace-nowrap rounded-full border border-blue-400/40 bg-blue-600/25 px-3 py-1.5 text-xs text-blue-100 transition hover:border-blue-300/60 hover:bg-blue-600/40"
                 >
                   Open
                 </Link>
@@ -110,7 +110,7 @@ export function FirstSessionChecklist({ username }: FirstSessionChecklistProps) 
               <button
                 type="button"
                 onClick={() => setCompleted((current) => ({ ...current, [step.id]: !done }))}
-                className="mt-3 text-xs text-slate-300 transition hover:text-white"
+                className="mt-3 text-xs text-gray-300 transition hover:text-white"
               >
                 {done ? "Mark incomplete" : "Mark complete"}
               </button>
