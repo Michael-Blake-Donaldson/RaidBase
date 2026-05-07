@@ -23,6 +23,8 @@ export default async function SettingsPage() {
       language: true,
       micPreference: true,
       schedule: true,
+      preferredPlayType: true,
+      playstyleTraits: true,
       updatedAt: true,
     },
   });
@@ -30,6 +32,10 @@ export default async function SettingsPage() {
   if (!profile) {
     redirect("/auth/register");
   }
+
+  const normalizedTraits = Array.isArray(profile.playstyleTraits)
+    ? profile.playstyleTraits.filter((trait): trait is string => typeof trait === "string")
+    : null;
 
   return (
     <SiteShell
@@ -41,7 +47,10 @@ export default async function SettingsPage() {
       <SettingsClient
         username={session.user.username}
         email={session.user.email ?? ""}
-        initialProfile={profile}
+        initialProfile={{
+          ...profile,
+          playstyleTraits: normalizedTraits,
+        }}
         lastSyncedAt={profile.updatedAt.toISOString()}
       />
     </SiteShell>

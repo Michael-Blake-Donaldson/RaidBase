@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
+import { getServerAuthSession } from "@/lib/auth/session";
 import {
   activityFeed,
   platformStats,
@@ -20,8 +21,10 @@ import {
 import { readClips, readLfgPosts, readPlayers, readSquads } from "@/server/queries/content";
 
 export default async function Home() {
+  const session = await getServerAuthSession();
+
   const [recommendedPlayers, lfgPosts, featuredClips, squads] = await Promise.all([
-    readPlayers(),
+    readPlayers(session?.user?.username),
     readLfgPosts(),
     readClips(),
     readSquads(),
@@ -134,6 +137,7 @@ export default async function Home() {
                     <div>
                       <h4 className="rb-text-strong text-lg font-semibold">{player.displayName}</h4>
                       <p className="rb-text-muted mt-1 text-sm">{player.rank} • {player.role} • {player.region}</p>
+                      {player.playType ? <p className="rb-text-body mt-1 text-xs">Play type: {player.playType}</p> : null}
                     </div>
                     <div className="rb-badge-info rounded-full px-3 py-1 text-sm font-semibold">
                       {player.synergy}% fit

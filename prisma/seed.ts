@@ -46,6 +46,8 @@ async function main() {
           micPreference: "Required",
           bio: "Runs calm mid-round calls and stays composed late in ranked grinds.",
           schedule: "Weeknights 7PM-11PM CT",
+          preferredPlayType: "Shotcaller",
+          playstyleTraits: ["Decisive comms", "Momentum control", "Team direction"],
         },
       },
       userGames: {
@@ -91,6 +93,8 @@ async function main() {
           micPreference: "Preferred",
           bio: "Builds clean progression groups with notes and accountability.",
           schedule: "Tue/Thu/Sun 8PM-12AM ET",
+          preferredPlayType: "Strategist",
+          playstyleTraits: ["Map awareness", "Prep and adaptation", "Objective focus"],
         },
       },
       userGames: {
@@ -135,6 +139,8 @@ async function main() {
           micPreference: "Required",
           bio: "High-pressure opener who still rotates and reviews mistakes.",
           schedule: "Daily 6PM-10PM GMT",
+          preferredPlayType: "Aggressive Fragger",
+          playstyleTraits: ["High tempo", "Entry confidence", "Mechanical pressure"],
         },
       },
       userGames: {

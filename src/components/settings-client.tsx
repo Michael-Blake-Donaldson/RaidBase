@@ -15,6 +15,8 @@ type ProfileSettings = {
   language: string | null;
   micPreference: string;
   schedule: string | null;
+  preferredPlayType: string | null;
+  playstyleTraits: string[] | null;
 };
 
 type SettingsClientProps = {
@@ -23,6 +25,71 @@ type SettingsClientProps = {
   initialProfile: ProfileSettings;
   lastSyncedAt: string;
 };
+
+const PLAYSTYLE_ARCHETYPES = ["Shotcaller", "Strategist", "Support Anchor", "Aggressive Fragger"] as const;
+
+const PLAYSTYLE_TRAIT_MAP: Record<(typeof PLAYSTYLE_ARCHETYPES)[number], string[]> = {
+  Shotcaller: ["Decisive comms", "Momentum control", "Team direction"],
+  Strategist: ["Map awareness", "Prep and adaptation", "Objective focus"],
+  "Support Anchor": ["Team-first mindset", "Utility discipline", "Consistency"],
+  "Aggressive Fragger": ["High tempo", "Entry confidence", "Mechanical pressure"],
+};
+
+const PLAYSTYLE_QUESTIONS = [
+  {
+    prompt: "When your team falls behind early, what is your instinct?",
+    options: [
+      "Take control of comms and reset the plan.",
+      "Study enemy patterns and adjust the approach.",
+      "Stabilize teammates and protect morale.",
+      "Force an aggressive play to regain momentum.",
+    ],
+  },
+  {
+    prompt: "Which role in a close match feels most natural?",
+    options: [
+      "Primary voice and pace setter.",
+      "Tactical planner and adaptation lead.",
+      "Reliable backbone who enables everyone.",
+      "Playmaker who cracks rounds open.",
+    ],
+  },
+  {
+    prompt: "How do you prepare for a session?",
+    options: [
+      "Define team priorities and callout standards.",
+      "Review map, comp, and win-condition notes.",
+      "Check support tools, loadouts, and team needs.",
+      "Warm mechanics and look for entry timings.",
+    ],
+  },
+  {
+    prompt: "What do teammates usually praise you for?",
+    options: [
+      "Confident leadership under pressure.",
+      "Smart reads and strategic choices.",
+      "Reliable support and calm coordination.",
+      "Clutch plays and proactive pressure.",
+    ],
+  },
+] as const;
+
+function derivePlaystyleFromAnswers(answers: number[]) {
+  const counts = new Map<(typeof PLAYSTYLE_ARCHETYPES)[number], number>(
+    PLAYSTYLE_ARCHETYPES.map((type) => [type, 0]),
+  );
+
+  for (const answer of answers) {
+    const pickedType = PLAYSTYLE_ARCHETYPES[answer] ?? PLAYSTYLE_ARCHETYPES[0];
+    counts.set(pickedType, (counts.get(pickedType) ?? 0) + 1);
+  }
+
+  const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  const preferredPlayType = ranked[0]?.[0] ?? PLAYSTYLE_ARCHETYPES[0];
+  const playstyleTraits = PLAYSTYLE_TRAIT_MAP[preferredPlayType];
+
+  return { preferredPlayType, playstyleTraits };
+}
 
 export function SettingsClient({ username, email, initialProfile, lastSyncedAt }: SettingsClientProps) {
   const initialForm = {
@@ -33,6 +100,8 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
     language: initialProfile.language ?? "",
     micPreference: initialProfile.micPreference,
     schedule: initialProfile.schedule ?? "",
+    preferredPlayType: initialProfile.preferredPlayType ?? "Balanced",
+    playstyleTraits: initialProfile.playstyleTraits ?? [],
   };
 
   const [form, setForm] = useState({
@@ -46,6 +115,9 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
   const [syncedAt, setSyncedAt] = useState(lastSyncedAt);
   const [isOpeningBilling, setIsOpeningBilling] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<Array<number | null>>(
+    Array.from({ length: PLAYSTYLE_QUESTIONS.length }, () => null),
+  );
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     if (typeof window === "undefined") {
       return "day";
@@ -64,6 +136,8 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
     () => JSON.stringify(form) !== JSON.stringify(baselineForm),
     [form, baselineForm],
   );
+
+  const isQuizComplete = quizAnswers.every((answer) => answer !== null);
 
   async function saveProfile(nextForm: typeof initialForm, options?: { successMessage?: string }) {
     setIsSaving(true);
@@ -89,6 +163,8 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
             language: string | null;
             micPreference: string;
             schedule: string | null;
+            preferredPlayType: string | null;
+            playstyleTraits: string[] | null;
             updatedAt: string;
           };
         }
@@ -101,6 +177,10 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
     }
 
     if (payload?.profile) {
+      const normalizedTraits = Array.isArray(payload.profile.playstyleTraits)
+        ? payload.profile.playstyleTraits.filter((trait): trait is string => typeof trait === "string")
+        : [];
+
       const normalized = {
         displayName: payload.profile.displayName,
         bio: payload.profile.bio ?? "",
@@ -109,6 +189,8 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
         language: payload.profile.language ?? "",
         micPreference: payload.profile.micPreference,
         schedule: payload.profile.schedule ?? "",
+        preferredPlayType: payload.profile.preferredPlayType ?? "Balanced",
+        playstyleTraits: normalizedTraits,
       };
       setForm(normalized);
       setBaselineForm(normalized);
@@ -139,6 +221,23 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
     setForm({ ...baselineForm });
     setSaveError(null);
     setSaveMessage("Unsaved edits were reset.");
+  }
+
+  function onApplyPlaystyleQuiz() {
+    if (!isQuizComplete) {
+      return;
+    }
+
+    const answered = quizAnswers.map((answer) => answer ?? 0);
+    const result = derivePlaystyleFromAnswers(answered);
+
+    setForm((current) => ({
+      ...current,
+      preferredPlayType: result.preferredPlayType,
+      playstyleTraits: result.playstyleTraits,
+    }));
+    setSaveError(null);
+    setSaveMessage("Playstyle quiz result applied. Save settings to persist.");
   }
 
   async function onOpenBillingPortal() {
@@ -233,6 +332,71 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
               maxLength={400}
             />
           </label>
+
+          <div className="rb-surface-soft space-y-4 rounded-2xl p-4 sm:col-span-2">
+            <div>
+              <p className="rb-text-strong text-sm font-semibold">Play style profile</p>
+              <p className="rb-text-body mt-1 text-xs">
+                Take this quick personality/characteristics test to improve teammate matching quality.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {PLAYSTYLE_QUESTIONS.map((question, questionIndex) => (
+                <fieldset key={question.prompt} className="space-y-2">
+                  <legend className="rb-text-strong text-xs font-medium">{question.prompt}</legend>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {question.options.map((option, optionIndex) => (
+                      <label
+                        key={option}
+                        className="rb-text-body flex cursor-pointer items-start gap-2 rounded-xl border border-slate-300/60 px-3 py-2 text-xs"
+                      >
+                        <input
+                          type="radio"
+                          name={`playstyle-question-${questionIndex}`}
+                          checked={quizAnswers[questionIndex] === optionIndex}
+                          onChange={() =>
+                            setQuizAnswers((current) => {
+                              const next = [...current];
+                              next[questionIndex] = optionIndex;
+                              return next;
+                            })
+                          }
+                          className="mt-0.5"
+                        />
+                        <span>{option}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={onApplyPlaystyleQuiz}
+                disabled={!isQuizComplete}
+                className="rb-button-subtle rounded-full px-4 py-2 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                Apply quiz result
+              </button>
+              <button
+                type="button"
+                onClick={() => setQuizAnswers(Array.from({ length: PLAYSTYLE_QUESTIONS.length }, () => null))}
+                className="rb-button-secondary rounded-full px-4 py-2 text-xs font-medium transition"
+              >
+                Clear answers
+              </button>
+            </div>
+
+            <div className="rb-pill rounded-xl px-3 py-2 text-xs">
+              <p className="rb-text-strong font-medium">Current play type: {form.preferredPlayType || "Balanced"}</p>
+              <p className="rb-text-body mt-1">
+                Traits: {form.playstyleTraits.length > 0 ? form.playstyleTraits.join(" • ") : "Set by taking the quiz"}
+              </p>
+            </div>
+          </div>
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-3">

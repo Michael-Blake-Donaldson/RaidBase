@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { authOptions } from "@/lib/auth/options";
@@ -13,6 +14,8 @@ const updateProfileSchema = z.object({
   language: z.string().max(64).optional().or(z.literal("")),
   micPreference: z.string().min(2).max(64),
   schedule: z.string().max(160).optional().or(z.literal("")),
+  preferredPlayType: z.string().max(64).optional().or(z.literal("")),
+  playstyleTraits: z.array(z.string().max(64)).max(8).optional(),
 });
 
 export async function GET() {
@@ -32,6 +35,8 @@ export async function GET() {
       language: true,
       micPreference: true,
       schedule: true,
+      preferredPlayType: true,
+      playstyleTraits: true,
     },
   });
 
@@ -68,6 +73,8 @@ export async function PATCH(request: Request) {
       language: data.language?.trim() || null,
       micPreference: data.micPreference.trim(),
       schedule: data.schedule?.trim() || null,
+      preferredPlayType: data.preferredPlayType?.trim() || null,
+      playstyleTraits: data.playstyleTraits ?? Prisma.JsonNull,
     },
     select: {
       displayName: true,
@@ -77,6 +84,8 @@ export async function PATCH(request: Request) {
       language: true,
       micPreference: true,
       schedule: true,
+      preferredPlayType: true,
+      playstyleTraits: true,
       updatedAt: true,
     },
   });

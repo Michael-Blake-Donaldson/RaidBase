@@ -13,9 +13,9 @@ import {
   getSquadsFromDb,
 } from "@/server/queries/dashboard";
 
-export async function readPlayers() {
+export async function readPlayers(viewerUsername?: string) {
   try {
-    const data = await getRecommendedPlayersFromDb();
+    const data = await getRecommendedPlayersFromDb(viewerUsername);
     return data.length > 0 ? data : recommendedPlayers;
   } catch {
     return recommendedPlayers;

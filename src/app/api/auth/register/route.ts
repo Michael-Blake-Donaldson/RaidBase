@@ -51,6 +51,8 @@ export async function POST(request: Request) {
           timezone: parsed.data.timezone,
           micPreference: "Preferred",
           bio: "New player profile.",
+          preferredPlayType: "Balanced",
+          playstyleTraits: ["Developing identity", "Flexible role coverage"],
         },
       },
       subscription: {

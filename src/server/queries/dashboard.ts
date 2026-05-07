@@ -13,6 +13,28 @@ const jsonStringList = (value: unknown) => {
   return value.filter((item): item is string => typeof item === "string");
 };
 
+const scorePlaystyleSimilarity = (
+  viewerType: string | null,
+  viewerTraits: string[],
+  candidateType: string | null,
+  candidateTraits: string[],
+) => {
+  const typeScore =
+    viewerType && candidateType
+      ? viewerType.toLowerCase() === candidateType.toLowerCase()
+        ? 100
+        : 72
+      : 65;
+
+  const viewerSet = new Set(viewerTraits.map((trait) => trait.toLowerCase()));
+  const candidateSet = new Set(candidateTraits.map((trait) => trait.toLowerCase()));
+  const overlap = [...viewerSet].filter((trait) => candidateSet.has(trait)).length;
+  const maxTraits = Math.max(viewerSet.size, candidateSet.size, 1);
+  const traitScore = Math.round((overlap / maxTraits) * 100);
+
+  return percentile(typeScore * 0.65 + traitScore * 0.35);
+};
+
 const severityLabel: Record<SeverityLevel, ReportCard["severity"]> = {
   LOW: "Low",
   MEDIUM: "Medium",
@@ -26,8 +48,19 @@ const statusLabel: Record<ReportStatus, string> = {
   DISMISSED: "Dismissed by moderation",
 };
 
-export async function getRecommendedPlayersFromDb(): Promise<PlayerCard[]> {
+export async function getRecommendedPlayersFromDb(viewerUsername?: string): Promise<PlayerCard[]> {
+  const normalizedViewerUsername = viewerUsername?.trim().toLowerCase();
+
   const profiles = await db.profile.findMany({
+    where: normalizedViewerUsername
+      ? {
+          user: {
+            username: {
+              not: normalizedViewerUsername,
+            },
+          },
+        }
+      : undefined,
     include: {
       user: {
         include: {
@@ -46,16 +79,42 @@ export async function getRecommendedPlayersFromDb(): Promise<PlayerCard[]> {
     },
   });
 
+  const viewerProfile = normalizedViewerUsername
+    ? await db.profile.findFirst({
+        where: {
+          user: {
+            username: normalizedViewerUsername,
+          },
+        },
+        select: {
+          preferredPlayType: true,
+          playstyleTraits: true,
+        },
+      })
+    : null;
+
+  const viewerTraits = jsonStringList(viewerProfile?.playstyleTraits);
+
   return profiles.map((profile) => {
     const primaryGame = profile.user.userGames[0];
     const reputation = profile.user.reputation;
-    const synergy = reputation
+    const baseSynergy = reputation
       ? percentile(
           ((reputation.reliabilityScore + reputation.commsScore + reputation.skillScore + reputation.teamBehaviorScore) /
             20) *
             100,
         )
       : 0;
+
+    const candidateTraits = jsonStringList(profile.playstyleTraits);
+    const playstyleScore = scorePlaystyleSimilarity(
+      viewerProfile?.preferredPlayType ?? null,
+      viewerTraits,
+      profile.preferredPlayType,
+      candidateTraits,
+    );
+
+    const synergy = viewerProfile ? percentile(baseSynergy * 0.72 + playstyleScore * 0.28) : baseSynergy;
 
     const publicBadges = reputation?.publicBadges ? jsonStringList(reputation.publicBadges) : [];
 
@@ -66,6 +125,7 @@ export async function getRecommendedPlayersFromDb(): Promise<PlayerCard[]> {
       role: primaryGame?.role ?? "Flex",
       region: profile.region,
       mic: profile.micPreference,
+      playType: profile.preferredPlayType ?? "Balanced",
       synergy,
       reputation: publicBadges.length > 0 ? publicBadges : ["Growing profile"],
       games: profile.user.userGames.map((entry) => entry.game.name),

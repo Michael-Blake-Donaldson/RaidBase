@@ -11,6 +11,7 @@ export type PlayerCard = {
   role: string;
   region: string;
   mic: string;
+  playType?: string;
   synergy: number;
   reputation: string[];
   games: string[];
@@ -105,6 +106,7 @@ export const recommendedPlayers: PlayerCard[] = [
     role: "Initiator / IGL",
     region: "NA Central",
     mic: "Required",
+    playType: "Shotcaller",
     synergy: 92,
     reputation: ["Reliable", "Shotcaller", "Great Comms"],
     games: ["Valorant", "CS2"],
@@ -118,6 +120,7 @@ export const recommendedPlayers: PlayerCard[] = [
     role: "Support / Strategist",
     region: "NA East",
     mic: "Preferred",
+    playType: "Strategist",
     synergy: 88,
     reputation: ["Mentor", "Chill", "Prepared"],
     games: ["World of Warcraft", "Destiny 2"],
@@ -131,6 +134,7 @@ export const recommendedPlayers: PlayerCard[] = [
     role: "Entry / Flex",
     region: "EU West",
     mic: "Required",
+    playType: "Aggressive Fragger",
     synergy: 85,
     reputation: ["Reliable", "Fast Learner", "No Tilt"],
     games: ["Apex Legends", "Rainbow Six Siege"],
