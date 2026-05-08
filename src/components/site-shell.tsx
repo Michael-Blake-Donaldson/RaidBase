@@ -79,12 +79,20 @@ export function SiteShell({
               <button type="button" className="rb-chip-dark rounded-full p-2.5">
                 <Search className="h-4 w-4" />
               </button>
-              <button type="button" className="rb-button-secondary rounded-full p-2">
-                <Bell className="h-4 w-4" />
-              </button>
-              <button type="button" className="rb-button-secondary rounded-full p-1.5">
-                <UserCircle2 className="h-7 w-7" />
-              </button>
+              <details className="group relative">
+                <summary className="rb-button-secondary flex cursor-pointer list-none items-center rounded-full p-1.5 transition [&::-webkit-details-marker]:hidden">
+                  <UserCircle2 className="h-7 w-7" />
+                </summary>
+
+                <div className="rb-overlay absolute right-0 z-50 mt-2 w-48 rounded-2xl p-2 backdrop-blur">
+                  <Link href="/settings" className="rb-button-secondary block rounded-xl px-3 py-2 text-sm transition">
+                    Settings
+                  </Link>
+                  <Link href="/auth/sign-in" className="rb-button-secondary mt-1 block rounded-xl px-3 py-2 text-sm transition">
+                    Sign in
+                  </Link>
+                </div>
+              </details>
             </div>
           </div>
 
