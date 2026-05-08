@@ -124,10 +124,28 @@ For code quality:
 npm run lint
 ```
 
+For unit and route tests:
+
+```bash
+npm run test
+```
+
 For a production build check:
 
 ```bash
 npm run build
+```
+
+For end-to-end smoke coverage against the built app:
+
+```bash
+npm run test:e2e
+```
+
+For Lighthouse performance budget enforcement:
+
+```bash
+npm run perf:budget
 ```
 
 ## Production UX Baseline Implemented
@@ -148,7 +166,10 @@ The home experience and shell were refactored to improve readability, speed, and
 Before deployment, run these checks in CI:
 
 - `npm run lint`
+- `npm run test`
 - `npm run build`
+- `npm run test:e2e`
+- `npm run perf:budget`
 
 And track runtime metrics in production:
 
