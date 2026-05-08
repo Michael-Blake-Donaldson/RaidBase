@@ -14,6 +14,7 @@
 /coverage
 /test-results
 /.playwright-artifacts
+/.lighthouseci
 
 # next.js
 /.next/
