@@ -35,15 +35,24 @@ export async function getUserEntitlements(userId: string) {
   });
 
   if (!subscription) {
-    return { plan: "FREE", status: "INACTIVE", entitlements: freeEntitlements };
+    return {
+      plan: "FREE",
+      status: "INACTIVE",
+      clipLimit: 3,
+      isPro: false,
+      entitlements: freeEntitlements,
+    };
   }
 
-  const isPro = subscription.plan === "PRO" && subscription.status === "ACTIVE";
+  const periodValid = subscription.currentPeriodEnd ? subscription.currentPeriodEnd.getTime() > Date.now() : true;
+  const isPro = subscription.plan === "PRO" && subscription.status === "ACTIVE" && periodValid;
 
   return {
     plan: subscription.plan,
     status: subscription.status,
     currentPeriodEnd: subscription.currentPeriodEnd,
+    clipLimit: isPro ? 10 : 3,
+    isPro,
     entitlements: isPro ? proEntitlements : freeEntitlements,
   };
 }

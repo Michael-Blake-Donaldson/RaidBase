@@ -26,6 +26,32 @@ type SettingsClientProps = {
   lastSyncedAt: string;
 };
 
+type BillingSnapshot = {
+  plan: "FREE" | "PRO";
+  status: "INACTIVE" | "ACTIVE" | "PAST_DUE" | "CANCELED";
+  currentPeriodEnd?: string;
+  clipLimit?: number;
+};
+
+function isBillingSnapshot(value: unknown): value is BillingSnapshot {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as { plan?: unknown; status?: unknown; clipLimit?: unknown };
+
+  const validPlan = candidate.plan === "FREE" || candidate.plan === "PRO";
+  const validStatus =
+    candidate.status === "INACTIVE" ||
+    candidate.status === "ACTIVE" ||
+    candidate.status === "PAST_DUE" ||
+    candidate.status === "CANCELED";
+  const validClipLimit =
+    typeof candidate.clipLimit === "undefined" || typeof candidate.clipLimit === "number";
+
+  return validPlan && validStatus && validClipLimit;
+}
+
 const PLAYSTYLE_ARCHETYPES = ["Shotcaller", "Strategist", "Support Anchor", "Aggressive Fragger"] as const;
 
 const PLAYSTYLE_TRAIT_MAP: Record<(typeof PLAYSTYLE_ARCHETYPES)[number], string[]> = {
@@ -114,7 +140,9 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
   const [saveError, setSaveError] = useState<string | null>(null);
   const [syncedAt, setSyncedAt] = useState(lastSyncedAt);
   const [isOpeningBilling, setIsOpeningBilling] = useState(false);
+  const [isStartingCheckout, setIsStartingCheckout] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
+  const [billingSnapshot, setBillingSnapshot] = useState<BillingSnapshot | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Array<number | null>>(
     Array.from({ length: PLAYSTYLE_QUESTIONS.length }, () => null),
   );
@@ -131,6 +159,21 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
     document.documentElement.dataset.rbTheme = themeMode;
     window.localStorage.setItem(THEME_STORAGE_KEY, themeMode);
   }, [themeMode]);
+
+  useEffect(() => {
+    async function loadBilling() {
+      const response = await fetch("/api/billing/entitlements", { method: "GET", cache: "no-store" });
+      const payload = await response.json().catch(() => null);
+
+      if (!response.ok || !isBillingSnapshot(payload)) {
+        return;
+      }
+
+      setBillingSnapshot(payload);
+    }
+
+    void loadBilling();
+  }, []);
 
   const hasUnsavedChanges = useMemo(
     () => JSON.stringify(form) !== JSON.stringify(baselineForm),
@@ -250,6 +293,22 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
     if (!response.ok || !payload?.url) {
       setBillingError(payload?.error ?? "Billing portal is not available yet.");
       setIsOpeningBilling(false);
+      return;
+    }
+
+    window.location.assign(payload.url);
+  }
+
+  async function onStartCheckout() {
+    setIsStartingCheckout(true);
+    setBillingError(null);
+
+    const response = await fetch("/api/billing/checkout", { method: "POST" });
+    const payload = (await response.json().catch(() => null)) as { error?: string; url?: string } | null;
+
+    if (!response.ok || !payload?.url) {
+      setBillingError(payload?.error ?? "Could not start checkout.");
+      setIsStartingCheckout(false);
       return;
     }
 
@@ -481,15 +540,47 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
 
         <article className="rb-surface-strong rounded-[28px] p-6">
           <h3 className="rb-text-strong text-xl font-semibold">Billing</h3>
-          <p className="rb-text-body mt-2 text-sm">Manage your subscription via Stripe portal when billing is configured.</p>
-          <button
-            type="button"
-            onClick={onOpenBillingPortal}
-            disabled={isOpeningBilling}
-            className="rb-button-subtle mt-4 rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {isOpeningBilling ? "Opening..." : "Open billing portal"}
-          </button>
+          <p className="rb-text-body mt-2 text-sm">Manage your subscription and unlock Pro entitlements.</p>
+
+          <dl className="rb-text-body mt-4 space-y-2 text-sm">
+            <div>
+              <dt className="rb-text-muted">Plan</dt>
+              <dd>{billingSnapshot?.plan ?? "FREE"}</dd>
+            </div>
+            <div>
+              <dt className="rb-text-muted">Status</dt>
+              <dd>{billingSnapshot?.status ?? "INACTIVE"}</dd>
+            </div>
+            <div>
+              <dt className="rb-text-muted">Clip slots</dt>
+              <dd>{billingSnapshot?.clipLimit ?? 3}</dd>
+            </div>
+            {billingSnapshot?.currentPeriodEnd ? (
+              <div>
+                <dt className="rb-text-muted">Current period ends</dt>
+                <dd>{new Date(billingSnapshot.currentPeriodEnd).toLocaleString()}</dd>
+              </div>
+            ) : null}
+          </dl>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={onStartCheckout}
+              disabled={isStartingCheckout}
+              className="rb-button-primary rounded-full px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isStartingCheckout ? "Opening checkout..." : "Upgrade to Pro"}
+            </button>
+            <button
+              type="button"
+              onClick={onOpenBillingPortal}
+              disabled={isOpeningBilling}
+              className="rb-button-subtle rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isOpeningBilling ? "Opening..." : "Open billing portal"}
+            </button>
+          </div>
           {billingError ? <p className="mt-3 text-sm text-rose-200">{billingError}</p> : null}
         </article>
 

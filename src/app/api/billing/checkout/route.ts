@@ -22,12 +22,17 @@ export async function POST() {
 
   const subscription = await db.subscription.findUnique({ where: { userId: session.user.id } });
 
+  if (subscription?.plan === "PRO" && subscription.status === "ACTIVE") {
+    return NextResponse.json({ error: "You already have an active Pro subscription." }, { status: 409 });
+  }
+
   let customerId = subscription?.stripeCustomerId;
   if (!customerId) {
     const customer = await stripe.customers.create({
       email: session.user.email,
       metadata: {
         userId: session.user.id,
+        username: session.user.username,
       },
     });
     customerId = customer.id;
@@ -47,7 +52,20 @@ export async function POST() {
   const checkout = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: customerId,
+    customer_update: {
+      address: "auto",
+      name: "auto",
+    },
     line_items: [{ price: proPriceId, quantity: 1 }],
+    metadata: {
+      userId: session.user.id,
+      username: session.user.username,
+    },
+    subscription_data: {
+      metadata: {
+        userId: session.user.id,
+      },
+    },
     success_url: `${appBaseUrl}/settings?billing=success`,
     cancel_url: `${appBaseUrl}/settings?billing=cancelled`,
   });

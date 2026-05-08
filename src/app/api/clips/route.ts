@@ -55,7 +55,7 @@ async function assertClipSlots(userId: string) {
     db.clip.count({ where: { userId } }),
   ]);
 
-  const clipLimit = entitlements.entitlements.extraClipSlots ? 10 : 3;
+  const clipLimit = entitlements.clipLimit;
 
   if (totalClips >= clipLimit) {
     return {

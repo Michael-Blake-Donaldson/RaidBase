@@ -20,7 +20,10 @@ export async function POST() {
 
   const subscription = await db.subscription.findUnique({ where: { userId: session.user.id } });
   if (!subscription?.stripeCustomerId) {
-    return NextResponse.json({ error: "No billing customer found." }, { status: 404 });
+    return NextResponse.json(
+      { error: "No billing customer found. Start a Pro checkout first." },
+      { status: 404 },
+    );
   }
 
   const portal = await stripe.billingPortal.sessions.create({
