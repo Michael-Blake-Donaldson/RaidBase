@@ -199,6 +199,8 @@ export async function getClipsFromDb(): Promise<ClipCard[]> {
     duration: "0:45",
     views: Intl.NumberFormat("en-US", { notation: "compact" }).format(clip.viewCount),
     mood: clip.featured ? "Featured" : "Community",
+    url: clip.url,
+    provider: clip.provider,
   }));
 }
 

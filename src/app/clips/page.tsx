@@ -1,5 +1,6 @@
 import { Film, Flame, Trophy } from "lucide-react";
 
+import { ClipsUploader } from "@/components/clips-uploader";
 import { SiteShell } from "@/components/site-shell";
 import { readClips } from "@/server/queries/content";
 
@@ -13,7 +14,10 @@ export default async function ClipsPage() {
       title="Show actual proof, not self-reported skill."
       description="Clips give context to rank, role, and reputation. The MVP supports embedded proof and featured showcases, with expanded slots and carousels reserved for Pro."
     >
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="space-y-6">
+        <ClipsUploader />
+
+        <div className="grid gap-6 lg:grid-cols-3">
         {featuredClips.map((clip) => (
           <article key={clip.title} className="rb-surface-strong overflow-hidden rounded-[28px]">
             <div className="flex aspect-video items-end bg-[linear-gradient(135deg,rgba(45,168,255,0.35),rgba(139,92,255,0.25),rgba(5,11,20,0.65))] p-5">
@@ -40,9 +44,20 @@ export default async function ClipsPage() {
                   Creator spotlight eligible
                 </div>
               </div>
+              {clip.url ? (
+                <a
+                  href={clip.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rb-button-subtle inline-flex rounded-full px-4 py-2 text-xs font-medium transition"
+                >
+                  Watch clip {clip.provider ? `(${clip.provider})` : ""}
+                </a>
+              ) : null}
             </div>
           </article>
         ))}
+        </div>
       </div>
     </SiteShell>
   );

@@ -26,6 +26,8 @@ export type ClipCard = {
   duration: string;
   views: string;
   mood: string;
+  url?: string;
+  provider?: string;
 };
 
 export type LfgCard = {
@@ -151,6 +153,8 @@ export const featuredClips: ClipCard[] = [
     duration: "0:42",
     views: "18.4k",
     mood: "Precision",
+    url: "https://youtube.com/watch?v=raidbase1",
+    provider: "YouTube",
   },
   {
     title: "Mythic callout breakdown and clean finish",
@@ -159,6 +163,8 @@ export const featuredClips: ClipCard[] = [
     duration: "1:14",
     views: "9.1k",
     mood: "Leadership",
+    url: "https://youtube.com/watch?v=raidbase2",
+    provider: "YouTube",
   },
   {
     title: "Final ring reset with instant armor swap",
@@ -167,6 +173,8 @@ export const featuredClips: ClipCard[] = [
     duration: "0:31",
     views: "13.7k",
     mood: "Clutch",
+    url: "https://youtube.com/watch?v=raidbase3",
+    provider: "YouTube",
   },
 ];
 
