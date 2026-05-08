@@ -38,6 +38,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Production dependency audit
+        run: npm run audit:prod
+
       - name: Test
         run: npm run test
 

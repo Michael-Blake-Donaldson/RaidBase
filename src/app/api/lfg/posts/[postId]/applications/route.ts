@@ -26,7 +26,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   const { postId } = await context.params;
 
-  const rateLimit = enforceRateLimit({
+  const rateLimit = await enforceRateLimit({
     key: `lfg-apply:${session.user.id}:${getClientIp(request)}`,
     limit: 20,
     windowMs: 60_000,

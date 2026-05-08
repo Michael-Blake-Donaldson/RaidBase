@@ -21,6 +21,8 @@ const envSchema = z.object({
   STRIPE_SECRET_KEY: optionalConfig,
   STRIPE_WEBHOOK_SECRET: optionalConfig,
   STRIPE_PRO_PRICE_ID: optionalConfig,
+  UPSTASH_REDIS_REST_URL: optionalConfig,
+  UPSTASH_REDIS_REST_TOKEN: optionalConfig,
 });
 
 const env = envSchema.parse(process.env);
@@ -60,4 +62,19 @@ export function getStripeEnv() {
     webhookSecret: webhookSecret ?? null,
     proPriceId: proPriceId ?? null,
   };
+}
+
+export function getRateLimitEnv() {
+  const restUrl = env.UPSTASH_REDIS_REST_URL;
+  const restToken = env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (env.NODE_ENV === "production" && env.STRICT_ENV_VALIDATION && Boolean(restUrl) !== Boolean(restToken)) {
+    throw new Error("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be configured together.");
+  }
+
+  return {
+    restUrl: restUrl ?? null,
+    restToken: restToken ?? null,
+    provider: restUrl && restToken ? "upstash" : "memory",
+  } as const;
 }

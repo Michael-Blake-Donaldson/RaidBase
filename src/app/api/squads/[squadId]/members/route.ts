@@ -26,7 +26,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   const { squadId } = await context.params;
 
-  const rateLimit = enforceRateLimit({
+  const rateLimit = await enforceRateLimit({
     key: `squad-join:${session.user.id}:${getClientIp(request)}`,
     limit: 20,
     windowMs: 60_000,

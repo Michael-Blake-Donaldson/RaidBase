@@ -1,3 +1,7 @@
+import { createHash } from "crypto";
+
+import { getRateLimitEnv } from "@/lib/env";
+
 type RateLimitOptions = {
   key: string;
   limit: number;
@@ -12,7 +16,7 @@ type RateLimitResult = {
 
 const store = new Map<string, number[]>();
 
-export function enforceRateLimit({ key, limit, windowMs }: RateLimitOptions): RateLimitResult {
+function enforceMemoryRateLimit({ key, limit, windowMs }: RateLimitOptions): RateLimitResult {
   const now = Date.now();
   const windowStart = now - windowMs;
 
@@ -36,4 +40,76 @@ export function enforceRateLimit({ key, limit, windowMs }: RateLimitOptions): Ra
     remaining: Math.max(0, limit - nextCount),
     retryAfterMs: 0,
   };
+}
+
+function normalizeRateLimitKey(key: string) {
+  return createHash("sha256").update(key).digest("hex");
+}
+
+async function enforceUpstashRateLimit(
+  { key, limit, windowMs }: RateLimitOptions,
+  config: { restUrl: string; restToken: string },
+): Promise<RateLimitResult | null> {
+  const safeKey = `rate:${normalizeRateLimitKey(key)}`;
+
+  try {
+    const response = await fetch(`${config.restUrl}/pipeline`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.restToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify([
+        ["INCR", safeKey],
+        ["PEXPIRE", safeKey, windowMs, "NX"],
+        ["PTTL", safeKey],
+      ]),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as Array<{ result?: number; error?: string }>;
+    const currentCount = Number(payload[0]?.result ?? 0);
+    const ttl = Math.max(0, Number(payload[2]?.result ?? 0));
+
+    if (!Number.isFinite(currentCount) || currentCount <= 0) {
+      return null;
+    }
+
+    if (currentCount > limit) {
+      return {
+        ok: false,
+        remaining: 0,
+        retryAfterMs: ttl,
+      };
+    }
+
+    return {
+      ok: true,
+      remaining: Math.max(0, limit - currentCount),
+      retryAfterMs: 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function enforceRateLimit(options: RateLimitOptions): Promise<RateLimitResult> {
+  const config = getRateLimitEnv();
+
+  if (config.provider === "upstash" && config.restUrl && config.restToken) {
+    const remoteResult = await enforceUpstashRateLimit(options, {
+      restUrl: config.restUrl,
+      restToken: config.restToken,
+    });
+
+    if (remoteResult) {
+      return remoteResult;
+    }
+  }
+
+  return enforceMemoryRateLimit(options);
 }

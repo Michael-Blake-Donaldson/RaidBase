@@ -113,7 +113,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   }
 
-  const rateLimit = enforceRateLimit({
+  const rateLimit = await enforceRateLimit({
     key: `clips-create:${session.user.id}:${getClientIp(request)}`,
     limit: 12,
     windowMs: 60_000,
