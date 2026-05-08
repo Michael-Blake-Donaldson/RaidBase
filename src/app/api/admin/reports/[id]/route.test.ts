@@ -1,0 +1,72 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("next-auth", () => ({
+  getServerSession: vi.fn(),
+}));
+
+vi.mock("@/lib/db", () => ({
+  db: {
+    report: {
+      update: vi.fn(),
+    },
+  },
+}));
+
+import { getServerSession } from "next-auth";
+
+import { db } from "@/lib/db";
+import { PATCH } from "@/app/api/admin/reports/[id]/route";
+
+describe("admin report update route", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("forbids non-moderators", async () => {
+    vi.mocked(getServerSession).mockResolvedValue({ user: { role: "USER" } } as never);
+
+    const request = new Request("http://localhost/api/admin/reports/r1", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "RESOLVED" }),
+    });
+
+    const response = await PATCH(request, { params: Promise.resolve({ id: "r1" }) });
+    expect(response.status).toBe(403);
+  });
+
+  it("rejects invalid moderation updates", async () => {
+    vi.mocked(getServerSession).mockResolvedValue({ user: { id: "m1", role: "ADMIN" } } as never);
+
+    const request = new Request("http://localhost/api/admin/reports/r1", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "DONE" }),
+    });
+
+    const response = await PATCH(request, { params: Promise.resolve({ id: "r1" }) });
+    expect(response.status).toBe(400);
+  });
+
+  it("records moderator ownership when updating a report", async () => {
+    vi.mocked(getServerSession).mockResolvedValue({ user: { id: "m1", role: "ADMIN" } } as never);
+    vi.mocked(db.report.update).mockResolvedValue({ id: "r1", status: "IN_REVIEW", moderatorId: "m1" } as never);
+
+    const request = new Request("http://localhost/api/admin/reports/r1", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "IN_REVIEW", details: "Escalated for review." }),
+    });
+
+    const response = await PATCH(request, { params: Promise.resolve({ id: "r1" }) });
+    expect(response.status).toBe(200);
+    expect(db.report.update).toHaveBeenCalledWith({
+      where: { id: "r1" },
+      data: {
+        status: "IN_REVIEW",
+        details: "Escalated for review.",
+        moderatorId: "m1",
+      },
+    });
+  });
+});
