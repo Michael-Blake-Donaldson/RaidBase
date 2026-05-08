@@ -346,6 +346,13 @@ model Subscription {
   updatedAt            DateTime           @updatedAt
 }
 
+model BillingWebhookEvent {
+  id            String   @id @default(cuid())
+  stripeEventId String   @unique
+  type          String
+  processedAt   DateTime @default(now())
+}
+
 model Report {
   id              String         @id @default(cuid())
   reporterId      String

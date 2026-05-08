@@ -30,6 +30,21 @@ async function resolveUserIdForCustomer(stripe: Stripe, customerId: string) {
   return userId || null;
 }
 
+async function beginWebhookProcessing(event: Stripe.Event) {
+  try {
+    await db.billingWebhookEvent.create({
+      data: {
+        stripeEventId: event.id,
+        type: event.type,
+      },
+    });
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   const stripe = getStripe();
   const { webhookSecret } = getStripeEnv();
@@ -50,6 +65,11 @@ export async function POST(request: Request) {
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
   } catch {
     return NextResponse.json({ error: "Invalid webhook signature." }, { status: 400 });
+  }
+
+  const shouldProcess = await beginWebhookProcessing(event);
+  if (!shouldProcess) {
+    return NextResponse.json({ received: true, duplicate: true });
   }
 
   if (event.type === "checkout.session.completed") {

@@ -1,7 +1,3 @@
-import { randomUUID } from "crypto";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
-
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
@@ -12,6 +8,7 @@ import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { createUserNotification } from "@/server/services/notifications";
 import { getUserEntitlements } from "@/server/services/entitlements";
+import { saveUploadedClipFile } from "@/server/services/clip-storage";
 
 const externalClipSchema = z.object({
   title: z.string().min(4).max(120),
@@ -24,12 +21,6 @@ const externalClipSchema = z.object({
 
 const allowedVideoMimeTypes = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 const maxUploadBytes = 50 * 1024 * 1024;
-
-const extensionByMimeType: Record<string, string> = {
-  "video/mp4": ".mp4",
-  "video/webm": ".webm",
-  "video/quicktime": ".mov",
-};
 
 function providerFromUrl(url: string) {
   const normalized = url.toLowerCase();
@@ -163,15 +154,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Clip is too large. Max size is 50MB." }, { status: 400 });
     }
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "clips");
-    await mkdir(uploadDir, { recursive: true });
-
-    const extension = extensionByMimeType[file.type] ?? ".mp4";
-    const clipFilename = `${randomUUID()}${extension}`;
-    const filePath = path.join(uploadDir, clipFilename);
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-
-    await writeFile(filePath, fileBuffer);
+    const storedClip = await saveUploadedClipFile({
+      mimeType: file.type,
+      fileBuffer,
+    });
 
     const gameSlug = typeof gameSlugRaw === "string" ? gameSlugRaw.trim() : "";
     const gameId = await resolveGameId(gameSlug || undefined);
@@ -182,8 +169,8 @@ export async function POST(request: Request) {
         userId: session.user.id,
         gameId,
         title,
-        url: `/uploads/clips/${clipFilename}`,
-        provider: "Upload",
+        url: storedClip.publicUrl,
+        provider: storedClip.provider,
         visibility,
         featured: false,
         viewCount: 0,

@@ -6,12 +6,15 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { z } from "zod";
 
 import { db } from "@/lib/db";
-import { getAuthSecret } from "@/lib/env";
+import { getAppBaseUrl, getAuthSecret } from "@/lib/env";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8).max(128),
 });
+
+process.env.NEXTAUTH_SECRET ??= getAuthSecret();
+process.env.NEXTAUTH_URL ??= getAppBaseUrl();
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
