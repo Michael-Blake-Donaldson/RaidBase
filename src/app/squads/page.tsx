@@ -43,10 +43,10 @@ export default async function SquadsPage() {
             <Users2 className="rb-icon h-5 w-5" />
             <h2 className="rb-text-strong text-xl font-semibold">Squad health roadmap</h2>
           </div>
-          <div className="rb-surface-soft rb-text-body rounded-[24px] p-4 text-sm leading-7">
+          <div className="rb-surface-soft rb-text-body rounded-3xl p-4 text-sm leading-7">
             V1 tracks repeat sessions, mutual positive reviews, and low conflict reports. Later versions can predict fit and monitor attendance trends automatically.
           </div>
-          <div className="rb-surface-soft rounded-[24px] p-4">
+          <div className="rb-surface-soft rounded-3xl p-4">
             <p className="rb-text-strong mb-2 flex items-center gap-2 text-sm font-medium">
               <Activity className="rb-icon h-4 w-4" />
               Shared context
@@ -55,7 +55,7 @@ export default async function SquadsPage() {
               Session history, strategy notes, roles, recurring teammates, and featured clips give squads memory instead of making every night start from zero.
             </p>
           </div>
-          <div className="rb-badge-success rounded-[24px] p-4">
+          <div className="rb-badge-success rounded-3xl p-4">
             <p className="mb-2 flex items-center gap-2 text-sm font-medium">
               <ShieldCheck className="h-4 w-4" />
               Trust controls

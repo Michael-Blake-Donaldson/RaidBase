@@ -13,6 +13,23 @@ const jsonStringList = (value: unknown) => {
   return value.filter((item): item is string => typeof item === "string");
 };
 
+const profilePlayType = (profile: unknown) => {
+  if (!profile || typeof profile !== "object") {
+    return null;
+  }
+
+  const value = (profile as { preferredPlayType?: unknown }).preferredPlayType;
+  return typeof value === "string" ? value : null;
+};
+
+const profilePlayTraits = (profile: unknown) => {
+  if (!profile || typeof profile !== "object") {
+    return [] as string[];
+  }
+
+  return jsonStringList((profile as { playstyleTraits?: unknown }).playstyleTraits);
+};
+
 const scorePlaystyleSimilarity = (
   viewerType: string | null,
   viewerTraits: string[],
@@ -86,14 +103,11 @@ export async function getRecommendedPlayersFromDb(viewerUsername?: string): Prom
             username: normalizedViewerUsername,
           },
         },
-        select: {
-          preferredPlayType: true,
-          playstyleTraits: true,
-        },
       })
     : null;
 
-  const viewerTraits = jsonStringList(viewerProfile?.playstyleTraits);
+  const viewerPreferredType = profilePlayType(viewerProfile);
+  const viewerTraits = profilePlayTraits(viewerProfile);
 
   return profiles.map((profile) => {
     const primaryGame = profile.user.userGames[0];
@@ -106,11 +120,12 @@ export async function getRecommendedPlayersFromDb(viewerUsername?: string): Prom
         )
       : 0;
 
-    const candidateTraits = jsonStringList(profile.playstyleTraits);
+    const candidatePreferredType = profilePlayType(profile);
+    const candidateTraits = profilePlayTraits(profile);
     const playstyleScore = scorePlaystyleSimilarity(
-      viewerProfile?.preferredPlayType ?? null,
+      viewerPreferredType,
       viewerTraits,
-      profile.preferredPlayType,
+      candidatePreferredType,
       candidateTraits,
     );
 
@@ -125,7 +140,7 @@ export async function getRecommendedPlayersFromDb(viewerUsername?: string): Prom
       role: primaryGame?.role ?? "Flex",
       region: profile.region,
       mic: profile.micPreference,
-      playType: profile.preferredPlayType ?? "Balanced",
+      playType: candidatePreferredType ?? "Balanced",
       synergy,
       reputation: publicBadges.length > 0 ? publicBadges : ["Growing profile"],
       games: profile.user.userGames.map((entry) => entry.game.name),

@@ -53,7 +53,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                   <h2 className="mt-2 text-3xl font-semibold text-white">{player.displayName}</h2>
                   <p className="mt-3 text-sm leading-7 text-slate-300">{player.tagline}</p>
                 </div>
-                <div className="rounded-[24px] border border-cyan-300/20 bg-cyan-300/10 px-5 py-4 text-center">
+                <div className="rounded-3xl border border-cyan-300/20 bg-cyan-300/10 px-5 py-4 text-center">
                   <p className="text-xs uppercase tracking-[0.28em] text-cyan-100">Synergy score</p>
                   <p className="mt-2 text-4xl font-semibold text-white">{player.synergy}</p>
                 </div>

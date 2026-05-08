@@ -38,7 +38,7 @@ export default async function LfgPage() {
               </span>
             ))}
           </div>
-          <div className="rb-badge-info rounded-[24px] p-4 text-sm leading-7">
+          <div className="rb-badge-info rounded-3xl p-4 text-sm leading-7">
             Auto-suggestions prioritize users with compatible schedules, low conflict history, and roles your current group still lacks.
           </div>
         </aside>

@@ -34,7 +34,7 @@ export function SiteShell({
 }: SiteShellProps) {
   return (
     <div className="rb-page">
-      <main id="main-content" className="mx-auto min-h-screen w-full max-w-[1720px] px-5 py-5 lg:px-8">
+      <main id="main-content" className="mx-auto min-h-screen w-full max-w-430 px-5 py-5 lg:px-8">
         <header className="rb-shell rounded-[28px] px-5 py-4 lg:px-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-4">

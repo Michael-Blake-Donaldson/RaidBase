@@ -77,7 +77,7 @@ export default async function Home() {
               </div>
 
               <div className="grid gap-4">
-                <div className="rb-surface rounded-[24px] p-5">
+                <div className="rb-surface rounded-3xl p-5">
                   <p className="rb-icon flex items-center gap-2 text-sm font-medium">
                     <Sparkles className="h-4 w-4" />
                     Why this product exists
@@ -86,7 +86,7 @@ export default async function Home() {
                     Find players by rank, region, tone, schedule, comms style, and reliability instead of rolling the dice on random queue chemistry.
                   </p>
                 </div>
-                <div className="rb-badge-success rounded-[24px] p-5">
+                <div className="rb-badge-success rounded-3xl p-5">
                   <p className="flex items-center gap-2 text-sm font-medium">
                     <Shield className="h-4 w-4" />
                     Anti-abuse rules
@@ -103,7 +103,7 @@ export default async function Home() {
             {platformStats.map((stat) => (
               <article
                 key={stat.label}
-                className="rb-surface-strong rounded-[24px] p-5"
+                className="rb-surface-strong rounded-3xl p-5"
               >
                 <p className="rb-text-muted text-xs uppercase tracking-[0.28em]">{stat.label}</p>
                 <div className="mt-3 flex items-end justify-between gap-3">
@@ -131,7 +131,7 @@ export default async function Home() {
                 <Link
                   key={player.username}
                   href={`/profile/${player.username}`}
-                  className="rb-surface-soft block rounded-[24px] p-5 transition hover:border-blue-300 hover:bg-[#f1f5f9]"
+                  className="rb-surface-soft block rounded-3xl p-5 transition hover:border-blue-300 hover:bg-[#f1f5f9]"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -169,7 +169,7 @@ export default async function Home() {
             </div>
             <div className="space-y-4">
               {lfgPosts.slice(0, 3).map((post) => (
-                <div key={post.title} className="rb-surface-soft rounded-[24px] p-5">
+                <div key={post.title} className="rb-surface-soft rounded-3xl p-5">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h4 className="rb-text-strong text-base font-semibold">{post.title}</h4>
                     <span className="rb-badge-success rounded-full px-3 py-1 text-xs">
@@ -219,7 +219,7 @@ export default async function Home() {
             </div>
             <div className="grid gap-4 lg:grid-cols-3">
               {featuredClips.map((clip) => (
-                <article key={clip.title} className="rb-surface-soft overflow-hidden rounded-[24px]">
+                <article key={clip.title} className="rb-surface-soft overflow-hidden rounded-3xl">
                   <div className="flex aspect-video items-end bg-[linear-gradient(135deg,rgba(59,130,246,0.35),rgba(139,92,246,0.25),rgba(30,41,59,0.62))] p-4">
                     <span className="rb-badge-info rounded-full px-3 py-1 text-xs uppercase tracking-[0.24em]">
                       {clip.mood}
@@ -248,7 +248,7 @@ export default async function Home() {
             </div>
             <div className="space-y-4">
               {squads.map((squad) => (
-                <article key={squad.name} className="rb-surface-soft rounded-[24px] p-5">
+                <article key={squad.name} className="rb-surface-soft rounded-3xl p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h4 className="rb-text-strong text-lg font-semibold">{squad.name}</h4>
