@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { readSquads } from "@/server/queries/content";
+import { createUserNotification } from "@/server/services/notifications";
 
 const createSquadSchema = z.object({
   name: z.string().min(3).max(40),
@@ -77,6 +78,14 @@ export async function POST(request: Request) {
       privacy: true,
       inviteCode: true,
     },
+  });
+
+  await createUserNotification({
+    userId: session.user.id,
+    type: "squad_created",
+    title: "Squad created successfully",
+    body: `${squad.name} is ready. Invite teammates and start building chemistry.`,
+    linkUrl: "/squads",
   });
 
   return NextResponse.json({ squad }, { status: 201 });

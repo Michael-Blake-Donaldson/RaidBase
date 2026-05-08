@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { createUserNotifications } from "@/server/services/notifications";
 import { recomputeReputationAggregate } from "@/server/services/reputation";
 
 const reviewSchema = z.object({
@@ -96,6 +97,23 @@ export async function POST(request: Request) {
     });
 
     await recomputeReputationAggregate(reviewed.id);
+
+    await createUserNotifications([
+      {
+        userId: reviewed.id,
+        type: "review_received",
+        title: "New session review received",
+        body: `${session.user.username} submitted a review for your recent session.`,
+        linkUrl: `/profile/${reviewed.username}`,
+      },
+      {
+        userId: session.user.id,
+        type: "review_submitted",
+        title: "Review submitted",
+        body: "Your review has been recorded and trust metrics were refreshed.",
+        linkUrl: "/settings",
+      },
+    ]);
 
     return NextResponse.json({ review }, { status: 201 });
   } catch {

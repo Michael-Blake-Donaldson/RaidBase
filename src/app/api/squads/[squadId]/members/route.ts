@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { createUserNotification } from "@/server/services/notifications";
 
 const joinSchema = z.object({
   inviteCode: z.string().max(32).optional(),
@@ -101,6 +102,22 @@ export async function POST(request: Request, context: RouteContext) {
         },
         select: { id: true, status: true },
       });
+
+  await createUserNotification({
+    userId: squad.ownerId,
+    type: "squad_joined",
+    title: "New squad member joined",
+    body: `${session.user.username} joined your squad.`,
+    linkUrl: "/squads",
+  });
+
+  await createUserNotification({
+    userId: session.user.id,
+    type: "squad_membership_confirmed",
+    title: "You joined a squad",
+    body: "Your membership is active. Coordinate your next session.",
+    linkUrl: "/squads",
+  });
 
   return NextResponse.json({ member }, { status: 201 });
 }

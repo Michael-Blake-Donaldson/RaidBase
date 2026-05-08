@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { createUserNotification } from "@/server/services/notifications";
 
 const applySchema = z.object({
   message: z.string().max(280).optional(),
@@ -88,6 +89,22 @@ export async function POST(request: Request, context: RouteContext) {
       status: true,
       createdAt: true,
     },
+  });
+
+  await createUserNotification({
+    userId: post.creatorId,
+    type: "lfg_application_received",
+    title: "New join request on your LFG post",
+    body: `${session.user.username} requested to join your stack.`,
+    linkUrl: "/lfg",
+  });
+
+  await createUserNotification({
+    userId: session.user.id,
+    type: "lfg_application_submitted",
+    title: "Join request sent",
+    body: "Your application was submitted and is waiting for review.",
+    linkUrl: "/lfg",
   });
 
   return NextResponse.json({ application }, { status: 201 });

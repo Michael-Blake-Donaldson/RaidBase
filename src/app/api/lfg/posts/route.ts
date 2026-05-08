@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { readLfgPosts } from "@/server/queries/content";
+import { createUserNotification } from "@/server/services/notifications";
 
 const createLfgSchema = z.object({
   gameSlug: z.string().min(2).max(64),
@@ -73,6 +74,14 @@ export async function POST(request: Request) {
       status: "OPEN",
       expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 8),
     },
+  });
+
+  await createUserNotification({
+    userId: session.user.id,
+    type: "lfg_post_created",
+    title: "Your LFG post is live",
+    body: `Your post \"${created.title}\" is now visible in the board.`,
+    linkUrl: "/lfg",
   });
 
   return NextResponse.json({ post: created }, { status: 201 });
