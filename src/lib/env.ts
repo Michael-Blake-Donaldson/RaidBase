@@ -26,6 +26,8 @@ const envSchema = z.object({
   STRIPE_PRO_PRICE_ID: optionalConfig,
   UPSTASH_REDIS_REST_URL: optionalConfig,
   UPSTASH_REDIS_REST_TOKEN: optionalConfig,
+  OBSERVABILITY_WEBHOOK_URL: z.string().url().optional(),
+  OBSERVABILITY_SERVICE_NAME: optionalConfig,
 });
 
 const env = envSchema.parse(process.env);
@@ -93,5 +95,13 @@ export function getRateLimitEnv() {
     restUrl: restUrl ?? null,
     restToken: restToken ?? null,
     provider: restUrl && restToken ? "upstash" : "memory",
+  } as const;
+}
+
+export function getObservabilityEnv() {
+  return {
+    webhookUrl: env.OBSERVABILITY_WEBHOOK_URL ?? null,
+    serviceName: env.OBSERVABILITY_SERVICE_NAME ?? "raidbase-web",
+    environment: env.NODE_ENV,
   } as const;
 }

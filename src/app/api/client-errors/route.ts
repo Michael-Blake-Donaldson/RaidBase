@@ -3,30 +3,27 @@ import { z } from "zod";
 
 import { emitObservabilityEvent, getRequestId } from "@/lib/observability";
 
-const vitalsSchema = z.object({
-  id: z.string().min(1),
-  name: z.enum(["CLS", "FCP", "INP", "LCP", "TTFB"]),
-  value: z.number().finite(),
-  rating: z.enum(["good", "needs-improvement", "poor"]),
-  delta: z.number().finite(),
-  navigationType: z.string().min(1),
+const clientErrorSchema = z.object({
+  digest: z.string().min(1).optional(),
+  message: z.string().min(1),
+  stack: z.string().min(1).optional(),
+  path: z.string().min(1).optional(),
 });
 
 export async function POST(request: Request) {
   const requestId = await getRequestId();
   const body = await request.json().catch(() => null);
-  const parsed = vitalsSchema.safeParse(body);
+  const parsed = clientErrorSchema.safeParse(body);
 
   if (!parsed.success) {
     return NextResponse.json({ ok: false, requestId }, { status: 400 });
   }
 
-  const metric = parsed.data;
-
   await emitObservabilityEvent({
-    event: "web_vital_recorded",
+    event: "client_error_reported",
+    level: "error",
     requestId,
-    payload: metric,
+    payload: parsed.data,
   });
 
   return NextResponse.json({ ok: true, requestId });

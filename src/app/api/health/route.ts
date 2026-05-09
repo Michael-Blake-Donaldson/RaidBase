@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
+import { getObservabilityEnv } from "@/lib/env";
+import { getRequestId } from "@/lib/observability";
 
 export async function GET() {
   const startedAt = Date.now();
+  const requestId = await getRequestId();
+  const { serviceName, environment } = getObservabilityEnv();
 
   try {
     await db.$queryRaw`SELECT 1`;
@@ -11,6 +15,9 @@ export async function GET() {
     return NextResponse.json(
       {
         status: "degraded",
+        service: serviceName,
+        environment,
+        requestId,
         checks: {
           database: "fail",
         },
@@ -21,6 +28,9 @@ export async function GET() {
 
   return NextResponse.json({
     status: "ok",
+    service: serviceName,
+    environment,
+    requestId,
     checks: {
       database: "pass",
     },

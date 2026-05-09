@@ -1,8 +1,20 @@
+import { NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 
 export default withAuth(
-  function middleware() {
-    return;
+  function middleware(req) {
+    const requestId = req.headers.get("x-request-id") ?? crypto.randomUUID();
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-request-id", requestId);
+
+    const response = NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+    response.headers.set("x-request-id", requestId);
+
+    return response;
   },
   {
     callbacks: {

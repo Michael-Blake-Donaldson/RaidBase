@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 
 type GlobalErrorProps = {
@@ -8,6 +9,21 @@ type GlobalErrorProps = {
 };
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  useEffect(() => {
+    void fetch("/api/client-errors", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        digest: error.digest,
+        message: error.message,
+        stack: error.stack,
+        path: window.location.pathname,
+      }),
+    }).catch(() => undefined);
+  }, [error]);
+
   return (
     <html lang="en">
       <body className="rb-auth-page p-6">

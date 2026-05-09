@@ -22,9 +22,20 @@ describe("env helpers", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("STRICT_ENV_VALIDATION", "true");
     vi.stubEnv("NEXTAUTH_SECRET", "");
+    vi.stubEnv("NEXT_PHASE", "");
 
     const { getAuthSecret } = await loadEnvModule();
     expect(() => getAuthSecret()).toThrowError("NEXTAUTH_SECRET is required in production.");
+  });
+
+  it("uses a build-only auth secret during the production build phase", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("STRICT_ENV_VALIDATION", "true");
+    vi.stubEnv("NEXTAUTH_SECRET", "");
+    vi.stubEnv("NEXT_PHASE", "phase-production-build");
+
+    const { getAuthSecret } = await loadEnvModule();
+    expect(getAuthSecret()).toBe("raidbase-build-only-secret");
   });
 
   it("returns null stripe values when not configured in non-production", async () => {
@@ -39,5 +50,18 @@ describe("env helpers", () => {
       webhookSecret: null,
       proPriceId: null,
     });
+  });
+
+  it("requires distributed rate limiting in production runtime", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("STRICT_ENV_VALIDATION", "true");
+    vi.stubEnv("NEXT_PHASE", "");
+    vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+    vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+
+    const { getRateLimitEnv } = await loadEnvModule();
+    expect(() => getRateLimitEnv()).toThrowError(
+      "UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required in production.",
+    );
   });
 });

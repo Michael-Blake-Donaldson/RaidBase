@@ -140,6 +140,14 @@ Recommended behavior:
 - Keep `STRICT_ENV_VALIDATION=true` in production
 - Use randomly generated secrets from your secret manager
 - Never commit real secrets to the repository
+- Set `OBSERVABILITY_WEBHOOK_URL` if you want structured events forwarded to an external sink
+
+Operational signals now exposed:
+
+- `x-request-id` response headers on protected surfaces
+- `/api/health` includes service, environment, and request ID metadata
+- `/api/vitals` records structured web-vitals events
+- `/api/client-errors` captures global client-side crash reports
 
 ## Validation Commands
 

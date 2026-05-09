@@ -6,6 +6,18 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+vi.mock("@/lib/env", () => ({
+  getObservabilityEnv: vi.fn(() => ({
+    serviceName: "raidbase-web",
+    environment: "test",
+    webhookUrl: null,
+  })),
+}));
+
+vi.mock("@/lib/observability", () => ({
+  getRequestId: vi.fn().mockResolvedValue("req_health_123"),
+}));
+
 import { db } from "@/lib/db";
 import { GET } from "@/app/api/health/route";
 
@@ -18,10 +30,19 @@ describe("health route", () => {
     vi.mocked(db.$queryRaw).mockResolvedValue([{ "?column?": 1 }] as never);
 
     const response = await GET();
-    const body = (await response.json()) as { status: string; checks: { database: string } };
+    const body = (await response.json()) as {
+      status: string;
+      service: string;
+      environment: string;
+      requestId: string;
+      checks: { database: string };
+    };
 
     expect(response.status).toBe(200);
     expect(body.status).toBe("ok");
+    expect(body.service).toBe("raidbase-web");
+    expect(body.environment).toBe("test");
+    expect(body.requestId).toBe("req_health_123");
     expect(body.checks.database).toBe("pass");
   });
 
@@ -29,10 +50,19 @@ describe("health route", () => {
     vi.mocked(db.$queryRaw).mockRejectedValue(new Error("db unavailable"));
 
     const response = await GET();
-    const body = (await response.json()) as { status: string; checks: { database: string } };
+    const body = (await response.json()) as {
+      status: string;
+      service: string;
+      environment: string;
+      requestId: string;
+      checks: { database: string };
+    };
 
     expect(response.status).toBe(503);
     expect(body.status).toBe("degraded");
+    expect(body.service).toBe("raidbase-web");
+    expect(body.environment).toBe("test");
+    expect(body.requestId).toBe("req_health_123");
     expect(body.checks.database).toBe("fail");
   });
 });
