@@ -13,7 +13,13 @@ import {
   getSquadsFromDb,
 } from "@/server/queries/dashboard";
 
+const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
+
 export async function readPlayers(viewerUsername?: string) {
+  if (isProductionBuild) {
+    return recommendedPlayers;
+  }
+
   try {
     const data = await getRecommendedPlayersFromDb(viewerUsername);
     return data.length > 0 ? data : recommendedPlayers;
@@ -23,6 +29,10 @@ export async function readPlayers(viewerUsername?: string) {
 }
 
 export async function readLfgPosts() {
+  if (isProductionBuild) {
+    return lfgPosts;
+  }
+
   try {
     const data = await getLfgPostsFromDb();
     return data.length > 0 ? data : lfgPosts;
@@ -32,6 +42,10 @@ export async function readLfgPosts() {
 }
 
 export async function readClips() {
+  if (isProductionBuild) {
+    return featuredClips;
+  }
+
   try {
     const data = await getClipsFromDb();
     return data.length > 0 ? data : featuredClips;
@@ -41,6 +55,10 @@ export async function readClips() {
 }
 
 export async function readSquads() {
+  if (isProductionBuild) {
+    return squads;
+  }
+
   try {
     const data = await getSquadsFromDb();
     return data.length > 0 ? data : squads;
@@ -50,6 +68,10 @@ export async function readSquads() {
 }
 
 export async function readModerationQueue() {
+  if (isProductionBuild) {
+    return moderationQueue;
+  }
+
   try {
     const data = await getModerationQueueFromDb();
     return data.length > 0 ? data : moderationQueue;

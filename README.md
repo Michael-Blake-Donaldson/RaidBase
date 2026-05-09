@@ -20,7 +20,7 @@ The current app includes:
 
 ## How It Works Right Now
 
-The app combines seeded/live SQLite data via Prisma with shared domain presentation data for product storytelling surfaces.
+The app combines seeded/live PostgreSQL data via Prisma with shared domain presentation data for product storytelling surfaces.
 
 That gives me a few advantages at this stage:
 
@@ -120,6 +120,8 @@ http://localhost:3000
 
 Copy `.env.example` to `.env` and set values for your environment.
 
+For local development, run a PostgreSQL instance and point `DATABASE_URL` at it before running Prisma commands or authenticated flows.
+
 For production deploys, this app now enforces strict environment validation by default. Missing required variables will fail startup early.
 
 Required in production:
@@ -140,6 +142,19 @@ Recommended behavior:
 - Never commit real secrets to the repository
 
 ## Validation Commands
+
+Database workflow:
+
+```bash
+npm run prisma:migrate:deploy
+npm run db:seed
+```
+
+For a full local reset:
+
+```bash
+npm run db:reset
+```
 
 For code quality:
 

@@ -14,9 +14,12 @@
     "perf:budget": "lhci autorun --config=lighthouserc.json",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
-    "db:reset": "prisma db push --force-reset && npm run prisma:seed"
+    "db:seed": "npm run prisma:seed",
+    "db:reset": "prisma migrate reset --force",
+    "db:setup": "npm run prisma:migrate:deploy && npm run db:seed"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",

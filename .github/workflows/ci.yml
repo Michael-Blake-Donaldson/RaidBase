@@ -8,6 +8,20 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: raidbase_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d raidbase_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout
@@ -24,16 +38,24 @@ jobs:
 
       - name: Setup environment
         run: |
-          echo 'DATABASE_URL="file:./dev.db"' > .env
+          echo 'DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/raidbase_ci?schema=public"' > .env
           echo 'STRICT_ENV_VALIDATION="true"' >> .env
           echo 'NEXTAUTH_SECRET="ci-nextauth-secret"' >> .env
           echo 'NEXTAUTH_URL="http://127.0.0.1:3000"' >> .env
+          echo 'STRIPE_SECRET_KEY="sk_test_ci"' >> .env
+          echo 'STRIPE_WEBHOOK_SECRET="whsec_ci"' >> .env
+          echo 'STRIPE_PRO_PRICE_ID="price_ci"' >> .env
+          echo 'UPSTASH_REDIS_REST_URL="https://upstash.example.invalid"' >> .env
+          echo 'UPSTASH_REDIS_REST_TOKEN="ci-token"' >> .env
 
       - name: Generate Prisma client
         run: npm run prisma:generate
 
-      - name: Reset and seed database
-        run: npm run db:reset
+      - name: Apply migrations
+        run: npm run prisma:migrate:deploy
+
+      - name: Seed database
+        run: npm run db:seed
 
       - name: Lint
         run: npm run lint
