@@ -13,6 +13,14 @@ export default defineConfig({
     include: ["src/**/*.test.ts"],
     coverage: {
       provider: "istanbul",
+      all: false,
+      exclude: [
+        "**/*.d.ts",
+        "**/node_modules/**",
+        "**/.next/**",
+        "**/coverage/**",
+        "prisma/**",
+      ],
       reporter: ["text", "html"],
       thresholds: {
         statements: 9,
