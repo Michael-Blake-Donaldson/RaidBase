@@ -190,6 +190,12 @@ For unit and route tests:
 npm run test
 ```
 
+For full coverage runs (CI/release gates):
+
+```bash
+npm run test:coverage
+```
+
 For a production build check:
 
 ```bash
@@ -226,7 +232,7 @@ The home experience and shell were refactored to improve readability, speed, and
 Before deployment, run these checks in CI:
 
 - `npm run lint`
-- `npm run test`
+- `npm run test:coverage`
 - `npm run build`
 - `npm run test:e2e`
 - `npm run perf:budget`
