@@ -15,7 +15,7 @@ const sections = [
   },
   {
     title: "User controls",
-    body: "Users can manage privacy visibility, blocked accounts, notification preferences, and billing state from the settings surface. Sensitive moderation notes are not published publicly.",
+    body: "Users can manage privacy visibility, blocked accounts, notification preferences, billing state, account data export, and account deletion from the settings surface. Sensitive moderation notes are not published publicly.",
   },
 ];
 

@@ -143,6 +143,13 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
   const [isStartingCheckout, setIsStartingCheckout] = useState(false);
   const [billingError, setBillingError] = useState<string | null>(null);
   const [billingSnapshot, setBillingSnapshot] = useState<BillingSnapshot | null>(null);
+  const [isExportingAccount, setIsExportingAccount] = useState(false);
+  const [accountExportError, setAccountExportError] = useState<string | null>(null);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [accountDeleteError, setAccountDeleteError] = useState<string | null>(null);
+  const [deleteUsername, setDeleteUsername] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
   const [quizAnswers, setQuizAnswers] = useState<Array<number | null>>(
     Array.from({ length: PLAYSTYLE_QUESTIONS.length }, () => null),
   );
@@ -313,6 +320,67 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
     }
 
     window.location.assign(payload.url);
+  }
+
+  async function onExportAccountData() {
+    setIsExportingAccount(true);
+    setAccountExportError(null);
+
+    const response = await fetch("/api/settings/export", {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setAccountExportError(payload?.error ?? "Could not export account data.");
+      setIsExportingAccount(false);
+      return;
+    }
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+
+    const filenameFromHeader = response.headers
+      .get("content-disposition")
+      ?.match(/filename=\"([^\"]+)\"/)?.[1];
+
+    const downloadName = filenameFromHeader ?? `raidbase-export-${username}.json`;
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = downloadName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(objectUrl);
+
+    setIsExportingAccount(false);
+  }
+
+  async function onDeleteAccount() {
+    setIsDeletingAccount(true);
+    setAccountDeleteError(null);
+
+    const response = await fetch("/api/settings/account", {
+      method: "DELETE",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        username: deleteUsername,
+        confirmationText: deleteConfirmationText,
+        password: deletePassword,
+      }),
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      setAccountDeleteError(payload?.error ?? "Could not delete account.");
+      setIsDeletingAccount(false);
+      return;
+    }
+
+    await signOut({ callbackUrl: "/?account=deleted" });
   }
 
   return (
@@ -536,6 +604,63 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
               <dd>{new Date(syncedAt).toLocaleString()}</dd>
             </div>
           </dl>
+
+          <div className="mt-5 space-y-3">
+            <button
+              type="button"
+              onClick={onExportAccountData}
+              disabled={isExportingAccount}
+              className="rb-button-subtle rounded-full px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isExportingAccount ? "Exporting..." : "Export account data"}
+            </button>
+
+            <div className="rb-surface-soft space-y-2 rounded-2xl p-4">
+              <p className="rb-text-strong text-xs font-semibold uppercase tracking-[0.2em]">Danger zone</p>
+              <p className="rb-text-body text-xs">
+                Deleting your account is permanent and removes profile, squads, reviews, clips, and connected records.
+              </p>
+              <label className="rb-text-body block text-xs">
+                Confirm username
+                <input
+                  value={deleteUsername}
+                  onChange={(event) => setDeleteUsername(event.target.value)}
+                  className="rb-field mt-1 w-full rounded-xl px-3 py-2 text-sm"
+                  placeholder={username}
+                />
+              </label>
+              <label className="rb-text-body block text-xs">
+                Type DELETE to confirm
+                <input
+                  value={deleteConfirmationText}
+                  onChange={(event) => setDeleteConfirmationText(event.target.value)}
+                  className="rb-field mt-1 w-full rounded-xl px-3 py-2 text-sm"
+                  placeholder="DELETE"
+                />
+              </label>
+              <label className="rb-text-body block text-xs">
+                Current password
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(event) => setDeletePassword(event.target.value)}
+                  className="rb-field mt-1 w-full rounded-xl px-3 py-2 text-sm"
+                  placeholder="Enter password"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={onDeleteAccount}
+                disabled={isDeletingAccount}
+                className="rb-badge-danger rounded-full px-4 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isDeletingAccount ? "Deleting..." : "Delete my account"}
+              </button>
+            </div>
+
+            {accountExportError ? <p className="text-sm text-rose-200">{accountExportError}</p> : null}
+            {accountDeleteError ? <p className="text-sm text-rose-200">{accountDeleteError}</p> : null}
+          </div>
         </article>
 
         <article className="rb-surface-strong rounded-[28px] p-6">

@@ -25,5 +25,4 @@ This repository includes a release baseline for transport and application securi
 - upstream `next-auth` / `@auth/core` `cookie` advisory pending vendor remediation
 - dependency vulnerability remediation cadence
 - broader integration coverage for auth and billing flows
-- formal account deletion and data export workflow
 - external incident alert routing for observability webhook delivery failures

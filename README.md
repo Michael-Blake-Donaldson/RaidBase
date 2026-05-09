@@ -264,6 +264,7 @@ What is implemented now:
 - User registration API with validation and rate limiting
 - Functional settings page with DB-backed profile updates
 - Settings safety UX with reset-unsaved and undo-last-save actions
+- Account data export and authenticated account deletion controls in settings
 - Interactive LFG board with create-post and request-to-join actions
 - Interactive squads hub with create-squad and join-squad actions
 - Privacy-aware squad membership flow with invite-code enforcement
