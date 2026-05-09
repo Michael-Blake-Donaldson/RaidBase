@@ -70,27 +70,35 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      const currentUser = await db.user.findUnique({
-        where: { id: token.sub },
-        select: {
-          id: true,
-          role: true,
-          status: true,
-          username: true,
-        },
-      });
+      try {
+        const currentUser = await db.user.findUnique({
+          where: { id: token.sub },
+          select: {
+            id: true,
+            role: true,
+            status: true,
+            username: true,
+          },
+        });
 
-      if (!currentUser || currentUser.status !== "ACTIVE") {
+        if (!currentUser || currentUser.status !== "ACTIVE") {
+          delete token.sub;
+          delete token.role;
+          delete token.username;
+          token.active = false;
+          return token;
+        }
+
+        token.role = currentUser.role;
+        token.username = currentUser.username;
+        token.active = true;
+      } catch {
+        // Database unavailable or error; mark token as inactive to prevent stale access
         delete token.sub;
         delete token.role;
         delete token.username;
         token.active = false;
-        return token;
       }
-
-      token.role = currentUser.role;
-      token.username = currentUser.username;
-      token.active = true;
 
       return token;
     },
