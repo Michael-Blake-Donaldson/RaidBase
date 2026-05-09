@@ -118,6 +118,11 @@ npm install
 
 Use Node.js `20.19.0` or newer. The CI workflow and current Next.js toolchain are validated against that release line.
 
+Version manager helpers are included:
+
+- `.nvmrc`
+- `.node-version`
+
 Start the local development server:
 
 ```bash
