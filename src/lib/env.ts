@@ -10,11 +10,14 @@ const optionalConfig = z.preprocess(
   z.string().min(1).optional(),
 );
 
+const strictValidationDefault = process.env.NODE_ENV === "production" ? "true" : "false";
+const isProductionBuild = process.env.NEXT_PHASE === "phase-production-build";
+
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   STRICT_ENV_VALIDATION: z
     .enum(["true", "false"])
-    .default("false")
+    .default(strictValidationDefault)
     .transform((value) => value === "true"),
   NEXTAUTH_SECRET: optionalSecret,
   NEXTAUTH_URL: z.string().url().optional(),
@@ -28,7 +31,7 @@ const envSchema = z.object({
 const env = envSchema.parse(process.env);
 
 function requiredInProduction(name: string, value: string | undefined) {
-  if (env.NODE_ENV === "production" && env.STRICT_ENV_VALIDATION && !value) {
+  if (env.NODE_ENV === "production" && env.STRICT_ENV_VALIDATION && !isProductionBuild && !value) {
     throw new Error(`${name} is required in production.`);
   }
 
@@ -36,13 +39,23 @@ function requiredInProduction(name: string, value: string | undefined) {
 }
 
 export function getAuthSecret() {
-  return (
-    requiredInProduction("NEXTAUTH_SECRET", env.NEXTAUTH_SECRET) ??
-    "raidbase-dev-only-secret"
-  );
+  if (env.NODE_ENV === "production" && !isProductionBuild && !env.NEXTAUTH_SECRET) {
+    throw new Error("NEXTAUTH_SECRET is required in production.");
+  }
+
+  if (env.NEXTAUTH_SECRET) {
+    return env.NEXTAUTH_SECRET;
+  }
+
+  if (isProductionBuild) {
+    return "raidbase-build-only-secret";
+  }
+
+  return "raidbase-dev-only-secret";
 }
 
 export function getAppBaseUrl() {
+  requiredInProduction("NEXTAUTH_URL", env.NEXTAUTH_URL);
   return env.NEXTAUTH_URL ?? "http://localhost:3000";
 }
 
@@ -70,6 +83,10 @@ export function getRateLimitEnv() {
 
   if (env.NODE_ENV === "production" && env.STRICT_ENV_VALIDATION && Boolean(restUrl) !== Boolean(restToken)) {
     throw new Error("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN must be configured together.");
+  }
+
+  if (env.NODE_ENV === "production" && env.STRICT_ENV_VALIDATION && !isProductionBuild && (!restUrl || !restToken)) {
+    throw new Error("UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required in production.");
   }
 
   return {

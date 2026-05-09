@@ -116,6 +116,29 @@ Open:
 http://localhost:3000
 ```
 
+## Environment Configuration
+
+Copy `.env.example` to `.env` and set values for your environment.
+
+For production deploys, this app now enforces strict environment validation by default. Missing required variables will fail startup early.
+
+Required in production:
+
+- `DATABASE_URL`
+- `NEXTAUTH_SECRET`
+- `NEXTAUTH_URL`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRO_PRICE_ID`
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+
+Recommended behavior:
+
+- Keep `STRICT_ENV_VALIDATION=true` in production
+- Use randomly generated secrets from your secret manager
+- Never commit real secrets to the repository
+
 ## Validation Commands
 
 For code quality:
