@@ -241,15 +241,33 @@ export async function getModerationQueueFromDb(): Promise<ReportCard[]> {
         in: ["OPEN", "IN_REVIEW"],
       },
     },
+    include: {
+      reporter: {
+        select: {
+          username: true,
+        },
+      },
+      moderator: {
+        select: {
+          username: true,
+        },
+      },
+    },
     orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
     take: 12,
   });
 
   return reports.map((report) => ({
+    id: report.id,
     subject: report.targetId,
+    targetType: report.targetType,
     reason: report.reason,
     severity: severityLabel[report.severity],
+    statusCode: report.status,
     status: statusLabel[report.status],
     evidence: report.details ?? "No additional evidence included.",
+    reporter: report.reporter.username,
+    moderator: report.moderator?.username ?? null,
+    createdAt: report.createdAt.toISOString(),
   }));
 }

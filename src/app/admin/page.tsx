@@ -1,5 +1,6 @@
 import { AlertTriangle, ShieldAlert, TimerReset } from "lucide-react";
 
+import { ModerationQueuePanel } from "@/components/admin/moderation-queue-panel";
 import { SiteShell } from "@/components/site-shell";
 import { readModerationQueue } from "@/server/queries/content";
 
@@ -14,32 +15,7 @@ export default async function AdminPage() {
       description="The MVP ships with report queues, user status context, and trust-risk signals so reputation cannot be weaponized without operational visibility."
     >
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <section className="space-y-4">
-          {moderationQueue.map((report) => (
-            <article key={report.subject} className="rb-surface-strong rounded-[28px] p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="rb-text-muted text-xs uppercase tracking-[0.28em]">Report target</p>
-                  <h2 className="rb-text-strong mt-2 text-xl font-semibold">{report.subject}</h2>
-                </div>
-                <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  report.severity === "High"
-                    ? "rb-badge-danger"
-                    : report.severity === "Medium"
-                      ? "rb-badge-warn"
-                      : "rb-badge-info"
-                }`}>
-                  {report.severity} severity
-                </span>
-              </div>
-              <p className="rb-text-body mt-4 text-sm">{report.reason}</p>
-              <div className="rb-surface-soft rb-text-body mt-4 rounded-[22px] p-4 text-sm leading-7">
-                {report.evidence}
-              </div>
-              <p className="rb-text-muted mt-4 text-sm">Current status: {report.status}</p>
-            </article>
-          ))}
-        </section>
+        <ModerationQueuePanel initialReports={moderationQueue} />
 
         <aside className="rb-surface-strong space-y-4 rounded-[28px] p-6">
           <div className="flex items-center gap-3">

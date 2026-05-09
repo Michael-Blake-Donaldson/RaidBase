@@ -57,11 +57,17 @@ export type SquadCard = {
 };
 
 export type ReportCard = {
+  id: string;
   subject: string;
+  targetType: string;
   reason: string;
   severity: "Low" | "Medium" | "High";
+  statusCode: "OPEN" | "IN_REVIEW" | "RESOLVED" | "DISMISSED";
   status: string;
   evidence: string;
+  reporter: string;
+  moderator: string | null;
+  createdAt: string;
 };
 
 export type ActionItem = {
@@ -270,25 +276,43 @@ export const squads: SquadCard[] = [
 
 export const moderationQueue: ReportCard[] = [
   {
+    id: "seed-report-1",
     subject: "rapidflame",
+    targetType: "USER",
     reason: "Session toxicity spike",
     severity: "High",
+    statusCode: "OPEN",
     status: "Auto-held from public comments",
     evidence: "5 negative reviews across 3 verified sessions in 48 hours",
+    reporter: "modseed",
+    moderator: null,
+    createdAt: "2026-05-05T20:12:00.000Z",
   },
   {
+    id: "seed-report-2",
     subject: "boostlink777",
+    targetType: "USER",
     reason: "Potential impersonation",
     severity: "Medium",
+    statusCode: "IN_REVIEW",
     status: "Pending identity review",
     evidence: "Username similarity and reused clip thumbnails",
+    reporter: "watchtower",
+    moderator: "adminseed",
+    createdAt: "2026-05-05T19:46:00.000Z",
   },
   {
+    id: "seed-report-3",
     subject: "lfg post #A-19",
+    targetType: "LFG_POST",
     reason: "Off-platform spam",
     severity: "Low",
+    statusCode: "OPEN",
     status: "Queued for moderator action",
     evidence: "Repeated redirect links in post body",
+    reporter: "modseed",
+    moderator: null,
+    createdAt: "2026-05-05T18:20:00.000Z",
   },
 ];
 

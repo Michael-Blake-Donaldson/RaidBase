@@ -29,14 +29,22 @@ export async function PATCH(request: Request, { params }: Params) {
 
   const { id } = await params;
 
-  const updated = await db.report.update({
-    where: { id },
-    data: {
-      status: parsed.data.status,
-      details: parsed.data.details,
-      moderatorId: session.user.id,
-    },
-  });
+  try {
+    const updated = await db.report.update({
+      where: { id },
+      data: {
+        status: parsed.data.status,
+        details: parsed.data.details,
+        moderatorId: session.user.id,
+      },
+    });
 
-  return NextResponse.json({ report: updated });
+    return NextResponse.json({ report: updated });
+  } catch (error) {
+    if ((error as { code?: string } | null)?.code === "P2025") {
+      return NextResponse.json({ error: "Report not found." }, { status: 404 });
+    }
+
+    throw error;
+  }
 }

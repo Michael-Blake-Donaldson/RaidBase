@@ -69,4 +69,21 @@ describe("admin report update route", () => {
       },
     });
   });
+
+  it("returns 404 when the report does not exist", async () => {
+    vi.mocked(getServerSession).mockResolvedValue({ user: { id: "m1", role: "ADMIN" } } as never);
+    const notFound = new Error("missing") as Error & { code?: string; name: string };
+    notFound.name = "PrismaClientKnownRequestError";
+    notFound.code = "P2025";
+    vi.mocked(db.report.update).mockRejectedValue(notFound);
+
+    const request = new Request("http://localhost/api/admin/reports/missing", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "RESOLVED" }),
+    });
+
+    const response = await PATCH(request, { params: Promise.resolve({ id: "missing" }) });
+    expect(response.status).toBe(404);
+  });
 });
