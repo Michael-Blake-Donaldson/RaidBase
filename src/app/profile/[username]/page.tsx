@@ -4,28 +4,99 @@ import { BadgeCheck, CalendarRange, Headset, ShieldCheck, Swords, Video } from "
 
 import { SiteShell } from "@/components/site-shell";
 import { db } from "@/lib/db";
+import { featuredClips, recommendedPlayers } from "@/lib/site-data";
 import { buildTrustSummary } from "@/server/services/reputation";
 
 type ProfilePageProps = {
   params: Promise<{ username: string }>;
 };
 
+function buildFallbackProfile(username: string) {
+  const normalizedUsername = username.toLowerCase();
+  const fallbackPlayer =
+    recommendedPlayers.find((player) => player.username === normalizedUsername) ?? recommendedPlayers[0];
+
+  if (!fallbackPlayer) {
+    return null;
+  }
+
+  const fallbackTrustScore = fallbackPlayer.synergy / 20;
+  const fallbackClips = featuredClips
+    .filter((clip) => clip.player.toLowerCase() === fallbackPlayer.displayName.toLowerCase())
+    .slice(0, 6)
+    .map((clip, index) => ({
+      id: `seed-clip-${index}`,
+      title: clip.title,
+      provider: clip.provider ?? "Community",
+      visibility: "public",
+      viewCount: Number.parseInt(clip.views.replace(/[^\d]/g, ""), 10) || 0,
+    }));
+
+  return {
+    username: fallbackPlayer.username,
+    profile: {
+      displayName: fallbackPlayer.displayName,
+      bio: fallbackPlayer.tagline,
+      schedule: fallbackPlayer.schedule,
+      micPreference: fallbackPlayer.mic,
+      region: fallbackPlayer.region,
+      preferredPlayType: fallbackPlayer.playType ?? "Balanced",
+    },
+    userGames: fallbackPlayer.games.map((game, index) => ({
+      game: {
+        id: `seed-game-${index}`,
+        name: game,
+      },
+      rank: index === 0 ? fallbackPlayer.rank : null,
+      role: index === 0 ? fallbackPlayer.role : null,
+    })),
+    clips: fallbackClips,
+    reputation: {
+      reliabilityScore: fallbackTrustScore,
+      commsScore: fallbackTrustScore,
+      skillScore: fallbackTrustScore,
+      teamBehaviorScore: fallbackTrustScore,
+      toxicityRisk: 0,
+      reviewCount: Math.max(3, fallbackPlayer.reputation.length),
+      uniqueReviewers: Math.max(3, fallbackPlayer.reputation.length),
+      publicBadges: fallbackPlayer.reputation,
+    },
+  };
+}
+
+async function readProfile(username: string) {
+  try {
+    const user = await db.user.findUnique({
+      where: {
+        username: username.toLowerCase(),
+      },
+      include: {
+        profile: true,
+        userGames: {
+          include: {
+            game: true,
+          },
+        },
+        clips: {
+          where: {
+            visibility: "public",
+          },
+          orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+          take: 6,
+        },
+        reputation: true,
+      },
+    });
+
+    return user?.profile ? user : null;
+  } catch {
+    return buildFallbackProfile(username);
+  }
+}
+
 export async function generateMetadata({ params }: ProfilePageProps): Promise<Metadata> {
   const { username } = await params;
-  const user = await db.user.findUnique({
-    where: {
-      username: username.toLowerCase(),
-    },
-    include: {
-      profile: true,
-      userGames: {
-        include: {
-          game: true,
-        },
-      },
-      reputation: true,
-    },
-  });
+  const user = await readProfile(username);
 
   if (!user?.profile) {
     return {
@@ -54,28 +125,7 @@ export async function generateMetadata({ params }: ProfilePageProps): Promise<Me
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
-
-  const user = await db.user.findUnique({
-    where: {
-      username: username.toLowerCase(),
-    },
-    include: {
-      profile: true,
-      userGames: {
-        include: {
-          game: true,
-        },
-      },
-      clips: {
-        where: {
-          visibility: "public",
-        },
-        orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-        take: 6,
-      },
-      reputation: true,
-    },
-  });
+  const user = await readProfile(username);
 
   if (!user?.profile) {
     notFound();
