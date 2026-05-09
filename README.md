@@ -30,6 +30,18 @@ That gives me a few advantages at this stage:
 
 The current version includes live credential authentication, profile settings persistence, session-protected APIs, billing endpoint wiring (Stripe-config dependent), and end-to-end smoke validation.
 
+Current known dependency risk:
+
+- `npm run audit:prod` still reports an upstream `next-auth` / `@auth/core` `cookie` advisory that is not patchable from the currently published stable line. Treat that as a tracked vendor risk until a fixed stable release ships.
+
+Operational release docs live in:
+
+- `docs/release/release-checklist.md`
+- `docs/operations/database-runbook.md`
+- `docs/operations/backup-and-recovery.md`
+- `docs/operations/staging-and-rollout.md`
+- `docs/security/security-review.md`
+
 ## Framework And Architecture Details
 
 Raidbase is built with the following stack:
@@ -103,6 +115,8 @@ Install dependencies:
 ```bash
 npm install
 ```
+
+Use Node.js `20.19.0` or newer. The CI workflow and current Next.js toolchain are validated against that release line.
 
 Start the local development server:
 
@@ -246,13 +260,14 @@ What is implemented now:
 - Route-level loading and error boundaries for key flows
 - Global application error boundary
 - Web-vitals ingest endpoint and client reporter
+- Structured client-error ingest endpoint and request ID propagation for protected routes
 - Playwright smoke tests and Lighthouse performance-budget CI gate
+- PostgreSQL migration-based database deploy workflow
 
 What is still intentionally mocked or pending:
 
-- Stripe billing
 - persistent moderation data
-- live notifications
+- notification delivery beyond in-app persistence
 - clip storage and upload handling
 - broader domain-specific server actions and deeper integration tests
 
@@ -271,4 +286,4 @@ That phase should include:
 
 ## Summary
 
-Raidbase is already structured like a real product, not just a landing page. The frontend now explains the platform, demonstrates the intended experience, and gives me a strong framework base for building the real data layer next.
+Raidbase now has a release-oriented foundation: strict production env validation, PostgreSQL migrations, guarded APIs, billing wiring, runtime observability hooks, and deployment runbooks alongside the existing product shell.

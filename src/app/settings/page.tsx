@@ -42,7 +42,7 @@ export default async function SettingsPage() {
       activePath="/settings"
       eyebrow="Settings"
       title="Trust, privacy, billing, and notifications belong in one place."
-      description="This page is fully wired to your account. Profile preferences save to the database, billing portal opens when configured, and account controls are live."
+      description="This page is wired to your account. Profile preferences save to the database, billing routes open when configured, and account controls are live."
     >
       <SettingsClient
         username={session.user.username}

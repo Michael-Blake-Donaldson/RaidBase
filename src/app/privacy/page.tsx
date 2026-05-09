@@ -25,7 +25,7 @@ export default function PrivacyPage() {
       activePath="/privacy"
       eyebrow="Privacy"
       title="A trust product needs an explicit data posture."
-      description="This launch-ready placeholder policy explains the categories of data Raidbase handles and the controls users should expect before public release."
+      description="This policy explains the categories of data Raidbase handles and the controls users should expect in a production release."
     >
       <div className="grid gap-4">
         {sections.map((section) => (

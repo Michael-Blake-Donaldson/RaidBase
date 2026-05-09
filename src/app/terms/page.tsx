@@ -15,7 +15,7 @@ const sections = [
   },
   {
     title: "Paid plans",
-    body: "Pro subscriptions expand discovery and customization features. Billing, renewal, and cancellation behavior should be made available through the payment provider portal before launch.",
+    body: "Pro subscriptions expand discovery and customization features. Billing, renewal, and cancellation behavior are managed through the payment provider portal and synchronized back into the product through verified webhook handling.",
   },
 ];
 
@@ -25,7 +25,7 @@ export default function TermsPage() {
       activePath="/terms"
       eyebrow="Terms"
       title="Public launch requires clear operating rules."
-      description="This launch-ready placeholder terms surface defines the baseline conduct, moderation, and subscription rules expected for a reputation-driven gaming platform."
+      description="This terms surface defines the baseline conduct, moderation, and subscription rules expected for a reputation-driven gaming platform."
     >
       <div className="grid gap-4">
         {sections.map((section) => (
