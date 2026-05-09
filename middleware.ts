@@ -21,13 +21,14 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const pathname = req.nextUrl.pathname;
         const role = token?.role;
+        const isActive = token?.active !== false;
 
         if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
-          return role === "ADMIN" || role === "MODERATOR";
+          return isActive && (role === "ADMIN" || role === "MODERATOR");
         }
 
         if (pathname.startsWith("/settings")) {
-          return Boolean(token?.sub);
+          return isActive && Boolean(token?.sub);
         }
 
         return true;
