@@ -3,12 +3,14 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
+import { emitObservabilityEvent, getRequestId } from "@/lib/observability";
 
 export async function GET() {
+  const requestId = await getRequestId();
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    return NextResponse.json({ error: "Authentication required.", requestId }, { status: 401 });
   }
 
   const user = await db.user.findUnique({
@@ -44,8 +46,17 @@ export async function GET() {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "Account not found." }, { status: 404 });
+    return NextResponse.json({ error: "Account not found.", requestId }, { status: 404 });
   }
+
+  await emitObservabilityEvent({
+    event: "account_data_exported",
+    requestId,
+    payload: {
+      userId: user.id,
+      username: user.username,
+    },
+  });
 
   const exportPayload = {
     exportedAt: new Date().toISOString(),
@@ -84,6 +95,7 @@ export async function GET() {
       "content-type": "application/json; charset=utf-8",
       "content-disposition": `attachment; filename=\"${filename}\"`,
       "cache-control": "no-store",
+      "x-request-id": requestId,
     },
   });
 }

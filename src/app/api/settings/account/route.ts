@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
+import { emitObservabilityEvent, getRequestId } from "@/lib/observability";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/request";
 
@@ -15,10 +16,11 @@ const deleteAccountSchema = z.object({
 });
 
 export async function DELETE(request: Request) {
+  const requestId = await getRequestId();
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    return NextResponse.json({ error: "Authentication required.", requestId }, { status: 401 });
   }
 
   const clientIp = getClientIp(request);
@@ -29,8 +31,18 @@ export async function DELETE(request: Request) {
   });
 
   if (!rateLimit.ok) {
+    await emitObservabilityEvent({
+      event: "account_delete_rate_limited",
+      level: "warn",
+      requestId,
+      payload: {
+        userId: session.user.id,
+        username: session.user.username,
+      },
+    });
+
     return NextResponse.json(
-      { error: "Too many account deletion attempts. Please try again later." },
+      { error: "Too many account deletion attempts. Please try again later.", requestId },
       {
         status: 429,
         headers: {
@@ -44,13 +56,13 @@ export async function DELETE(request: Request) {
   const parsed = deleteAccountSchema.safeParse(payload);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid account deletion payload." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid account deletion payload.", requestId }, { status: 400 });
   }
 
   const { username, password } = parsed.data;
 
   if (session.user.username !== username.trim()) {
-    return NextResponse.json({ error: "Confirmation username does not match your account." }, { status: 400 });
+    return NextResponse.json({ error: "Confirmation username does not match your account.", requestId }, { status: 400 });
   }
 
   const user = await db.user.findUnique({
@@ -62,20 +74,40 @@ export async function DELETE(request: Request) {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "Account not found." }, { status: 404 });
+    return NextResponse.json({ error: "Account not found.", requestId }, { status: 404 });
   }
 
   if (!user.passwordHash) {
-    return NextResponse.json({ error: "Password confirmation is unavailable for this account." }, { status: 409 });
+    return NextResponse.json({ error: "Password confirmation is unavailable for this account.", requestId }, { status: 409 });
   }
 
   const isValidPassword = await bcrypt.compare(password, user.passwordHash);
 
   if (!isValidPassword) {
-    return NextResponse.json({ error: "Password verification failed." }, { status: 403 });
+    await emitObservabilityEvent({
+      event: "account_delete_password_failed",
+      level: "warn",
+      requestId,
+      payload: {
+        userId: session.user.id,
+        username: session.user.username,
+      },
+    });
+
+    return NextResponse.json({ error: "Password verification failed.", requestId }, { status: 403 });
   }
 
   await db.user.delete({ where: { id: user.id } });
 
-  return NextResponse.json({ ok: true });
+  await emitObservabilityEvent({
+    event: "account_deleted",
+    level: "warn",
+    requestId,
+    payload: {
+      userId: user.id,
+      username: session.user.username,
+    },
+  });
+
+  return NextResponse.json({ ok: true, requestId });
 }

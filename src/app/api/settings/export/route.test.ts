@@ -12,6 +12,11 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
+vi.mock("@/lib/observability", () => ({
+  emitObservabilityEvent: vi.fn(),
+  getRequestId: vi.fn().mockResolvedValue("req_export_123"),
+}));
+
 import { getServerSession } from "next-auth";
 
 import { db } from "@/lib/db";

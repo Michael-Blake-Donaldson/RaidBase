@@ -18,6 +18,11 @@ vi.mock("@/lib/rate-limit", () => ({
   enforceRateLimit: vi.fn(),
 }));
 
+vi.mock("@/lib/observability", () => ({
+  emitObservabilityEvent: vi.fn(),
+  getRequestId: vi.fn().mockResolvedValue("req_account_123"),
+}));
+
 vi.mock("@/lib/db", () => ({
   db: {
     user: {
