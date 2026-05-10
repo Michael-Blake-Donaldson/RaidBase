@@ -7,6 +7,23 @@ test("homepage renders primary CTAs", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Browse LFG board" })).toBeVisible();
 });
 
+test("anonymous visitors see the first-visit guide", async ({ page }) => {
+  await page.context().clearCookies();
+  await page.goto("/");
+
+  const guide = page.getByRole("dialog", { name: "Meet Raidbase before you decide to join it." });
+  await expect(guide).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close welcome guide" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Close welcome guide" }).evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
+  await expect(guide).toHaveCount(0);
+
+  await page.reload();
+  await expect(page.getByRole("dialog", { name: "Meet Raidbase before you decide to join it." })).toBeVisible();
+});
+
 test("lfg page renders filter stack and listings", async ({ page }) => {
   await page.goto("/lfg");
 

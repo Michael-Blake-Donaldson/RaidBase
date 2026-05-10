@@ -5,9 +5,10 @@ import type { ReactNode } from "react";
 
 import { CommandPalette } from "@/components/command-palette";
 import { MotionFade } from "@/components/motion-fade";
-import { NotificationsTray } from "@/components/notifications-tray";
+import { getServerAuthSession } from "@/lib/auth/session";
 import { navItems, notificationItems } from "@/lib/site-data";
 import { siteConfig } from "@/lib/site-config";
+import { SiteShellOverlays } from "@/components/site-shell-overlays";
 
 type SiteShellProps = {
   activePath: string;
@@ -25,16 +26,24 @@ function isActive(activePath: string, href: string) {
   return activePath.startsWith(href);
 }
 
-export function SiteShell({
+export async function SiteShell({
   activePath,
   title,
   eyebrow,
   description,
   children,
 }: SiteShellProps) {
+  const session = await getServerAuthSession();
+  const isLoggedIn = Boolean(session?.user?.id);
+
   return (
     <div className="rb-page">
       <main id="main-content" className="mx-auto min-h-screen w-full max-w-430 px-5 py-5 lg:px-8">
+        <SiteShellOverlays
+          shouldShowWelcomeGuide={!isLoggedIn}
+          notificationItems={notificationItems}
+        />
+
         <header className="rb-shell rounded-[28px] px-5 py-4 lg:px-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-4">
@@ -74,7 +83,6 @@ export function SiteShell({
             </div>
 
             <div className="flex items-center gap-2">
-              <NotificationsTray items={notificationItems} />
               <CommandPalette navItems={navItems} />
               <button type="button" className="rb-chip-dark rounded-full p-2.5">
                 <Search className="h-4 w-4" />
@@ -85,10 +93,10 @@ export function SiteShell({
                 </summary>
 
                 <div className="rb-overlay absolute right-0 z-50 mt-2 w-48 rounded-2xl p-2 backdrop-blur">
-                  <Link href="/settings" className="rb-button-secondary block rounded-xl px-3 py-2 text-sm transition">
+                  <Link href="/settings" prefetch={false} className="rb-button-secondary block rounded-xl px-3 py-2 text-sm transition">
                     Settings
                   </Link>
-                  <Link href="/auth/sign-in" className="rb-button-secondary mt-1 block rounded-xl px-3 py-2 text-sm transition">
+                  <Link href="/auth/sign-in" prefetch={false} className="rb-button-secondary mt-1 block rounded-xl px-3 py-2 text-sm transition">
                     Sign in
                   </Link>
                 </div>
@@ -110,7 +118,7 @@ export function SiteShell({
           </div>
         </header>
 
-        <MotionFade className="mt-5" delay={0.06}>
+        <MotionFade className="mt-5">
           {children}
         </MotionFade>
 

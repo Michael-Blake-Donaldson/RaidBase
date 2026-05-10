@@ -123,6 +123,8 @@ export function NotificationsTray({ items }: NotificationsTrayProps) {
       if (Array.isArray(data.items)) {
         setLiveItems(data.items);
       }
+    } catch {
+      // Polling failures are non-fatal; keep local notification state.
     } finally {
       if (showSpinner) {
         setIsRefreshing(false);

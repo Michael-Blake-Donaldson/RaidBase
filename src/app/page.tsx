@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
-import { getServerAuthSession } from "@/lib/auth/session";
 import {
   activityFeed,
   platformStats,
@@ -21,10 +20,8 @@ import {
 import { readClips, readLfgPosts, readPlayers, readSquads } from "@/server/queries/content";
 
 export default async function Home() {
-  const session = await getServerAuthSession();
-
   const [recommendedPlayers, lfgPosts, featuredClips, squads] = await Promise.all([
-    readPlayers(session?.user?.username),
+    readPlayers(),
     readLfgPosts(),
     readClips(),
     readSquads(),

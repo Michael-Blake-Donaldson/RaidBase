@@ -19,6 +19,19 @@ process.env.NEXTAUTH_URL ??= getAppBaseUrl();
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   secret: getAuthSecret(),
+  logger: {
+    error(code, metadata) {
+      if (
+        code === "JWT_SESSION_ERROR" &&
+        typeof metadata?.message === "string" &&
+        metadata.message.toLowerCase().includes("decryption operation failed")
+      ) {
+        return;
+      }
+
+      console.error(`[next-auth][${code}]`, metadata);
+    },
+  },
   session: {
     strategy: "jwt",
   },

@@ -5,11 +5,11 @@ import { emitObservabilityEvent, getRequestId } from "@/lib/observability";
 
 const vitalsSchema = z.object({
   id: z.string().min(1),
-  name: z.enum(["CLS", "FCP", "INP", "LCP", "TTFB"]),
+  name: z.string().min(1),
   value: z.number().finite(),
-  rating: z.enum(["good", "needs-improvement", "poor"]),
+  rating: z.string().min(1).optional(),
   delta: z.number().finite(),
-  navigationType: z.string().min(1),
+  navigationType: z.string().min(1).optional(),
 });
 
 export async function POST(request: Request) {
