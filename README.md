@@ -4,7 +4,7 @@ A modern gaming community platform built with Next.js, designed to connect playe
 
 **Repository**: [Michael-Blake-Donaldson/RaidBase](https://github.com/Michael-Blake-Donaldson/RaidBase)  
 **Current Branch**: `main`  
-**Status**: Alpha / Private Beta Candidate — Core systems under active development; not yet production-ready  
+**Status**: Release Candidate Hardening — Sprint 13 final polish in progress  
 **Last Updated**: May 2026
 
 ---
@@ -31,6 +31,7 @@ A modern gaming community platform built with Next.js, designed to connect playe
 18. [Troubleshooting](#troubleshooting)
 19. [Contributing](#contributing)
 20. [Deployment Guide](#deployment-guide)
+21. [Launch Readiness](#launch-readiness)
 
 ---
 
@@ -159,6 +160,17 @@ RaidBase is a comprehensive gaming community platform that addresses the challen
 4. **Reputation System**: Track player behavior and trustworthiness
 5. **Platform Safety**: Robust moderation and admin tools
 6. **User Privacy**: Secure deletion and data export capabilities
+
+---
+
+## Launch Readiness
+
+Release gating and launch criteria are tracked in:
+
+- `docs/release/release-checklist.md`
+- `docs/release/launch-readiness.md`
+
+Use both documents before approving a production tag.
 
 ---
 
