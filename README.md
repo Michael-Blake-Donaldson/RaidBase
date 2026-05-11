@@ -4,7 +4,7 @@ A modern gaming community platform built with Next.js, designed to connect playe
 
 **Repository**: [Michael-Blake-Donaldson/RaidBase](https://github.com/Michael-Blake-Donaldson/RaidBase)  
 **Current Branch**: `main`  
-**Status**: Release-Ready (Alpha Phase)  
+**Status**: Alpha / Private Beta Candidate — Core systems under active development; not yet production-ready  
 **Last Updated**: May 2026
 
 ---
