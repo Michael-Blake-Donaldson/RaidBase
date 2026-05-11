@@ -332,8 +332,16 @@ export function SettingsClient({ username, email, initialProfile, lastSyncedAt }
     });
 
     if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      setAccountExportError(payload?.error ?? "Could not export account data.");
+      const payload = (await response.json().catch(() => null)) as
+        | { error?: string | { message?: string } }
+        | null;
+
+      const errorMessage =
+        typeof payload?.error === "string"
+          ? payload.error
+          : payload?.error?.message ?? "Could not export account data.";
+
+      setAccountExportError(errorMessage);
       setIsExportingAccount(false);
       return;
     }

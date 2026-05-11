@@ -7,5 +7,5 @@ export const siteConfig = {
     terms: "/terms",
     privacy: "/privacy",
   },
-  routes: ["/", "/lfg", "/squads", "/clips", "/settings", "/admin"],
+  routes: ["/", "/lfg", "/squads", "/clips", "/privacy", "/terms", "/settings", "/settings/security", "/admin"],
 };
