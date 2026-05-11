@@ -1,6 +1,6 @@
 import { ClipsUploader } from "@/components/clips-uploader";
 import { SiteShell } from "@/components/site-shell";
-import { ClipCard } from "@/components/raidbase";
+import { ClipCardContainer } from "@/components/raidbase";
 import { EmptyState } from "@/components/states";
 import { readClips } from "@/server/queries/content";
 
@@ -24,8 +24,9 @@ export default async function ClipsPage() {
           </div>
         ) : (
           featuredClips.map((clip) => (
-            <ClipCard
+            <ClipCardContainer
               key={clip.title}
+              id={clip.title}
               title={clip.title}
               player={clip.player}
               game={clip.game}
