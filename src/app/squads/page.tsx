@@ -1,7 +1,7 @@
 import { Activity, ShieldCheck, Users2 } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
-import { SquadCard } from "@/components/raidbase";
+import { SquadCardContainer } from "@/components/raidbase";
 import { EmptyState } from "@/components/states";
 import { readSquads } from "@/server/queries/content";
 
@@ -24,7 +24,7 @@ export default async function SquadsPage() {
             />
           ) : (
             squads.map((squad) => (
-              <SquadCard
+              <SquadCardContainer
                 key={squad.id}
                 id={squad.id}
                 name={squad.name}
