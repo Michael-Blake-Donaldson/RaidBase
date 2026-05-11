@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("next-auth", () => ({
-  getServerSession: vi.fn(),
+vi.mock("@/lib/auth/require-user", () => ({
+  requireUser: vi.fn(),
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -14,9 +14,9 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { getServerSession } from "next-auth";
-
+import { requireUser } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
+import { AppError } from "@/lib/errors";
 import { PATCH } from "@/app/api/notifications/[notificationId]/route";
 
 describe("notification mutation route", () => {
@@ -25,7 +25,7 @@ describe("notification mutation route", () => {
   });
 
   it("returns 401 when unauthenticated", async () => {
-    vi.mocked(getServerSession).mockResolvedValue(null);
+    vi.mocked(requireUser).mockRejectedValue(new AppError("UNAUTHORIZED", "You must be signed in.", 401));
 
     const request = new Request("http://localhost/api/notifications/n1", {
       method: "PATCH",
@@ -38,7 +38,7 @@ describe("notification mutation route", () => {
   });
 
   it("rejects invalid actions", async () => {
-    vi.mocked(getServerSession).mockResolvedValue({ user: { id: "u1" } } as never);
+    vi.mocked(requireUser).mockResolvedValue({ id: "u1" } as never);
 
     const request = new Request("http://localhost/api/notifications/n1", {
       method: "PATCH",
@@ -51,7 +51,7 @@ describe("notification mutation route", () => {
   });
 
   it("dismisses owned notifications", async () => {
-    vi.mocked(getServerSession).mockResolvedValue({ user: { id: "u1" } } as never);
+    vi.mocked(requireUser).mockResolvedValue({ id: "u1" } as never);
     vi.mocked(db.notification.findFirst).mockResolvedValue({ id: "n1" } as never);
 
     const request = new Request("http://localhost/api/notifications/n1", {
@@ -66,7 +66,7 @@ describe("notification mutation route", () => {
   });
 
   it("marks owned notifications as accepted", async () => {
-    vi.mocked(getServerSession).mockResolvedValue({ user: { id: "u1" } } as never);
+    vi.mocked(requireUser).mockResolvedValue({ id: "u1" } as never);
     vi.mocked(db.notification.findFirst).mockResolvedValue({ id: "n1" } as never);
 
     const request = new Request("http://localhost/api/notifications/n1", {

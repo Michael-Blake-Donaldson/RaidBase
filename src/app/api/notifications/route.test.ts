@@ -8,6 +8,7 @@ vi.mock("@/lib/db", () => ({
   db: {
     notification: {
       findMany: vi.fn(),
+      count: vi.fn(),
     },
   },
 }));
@@ -24,7 +25,8 @@ describe("notifications route", () => {
   it("returns fallback notification items for guests", async () => {
     vi.mocked(getServerSession).mockResolvedValue(null);
 
-    const response = await GET();
+    const request = new Request("http://localhost:3000/api/notifications");
+    const response = await GET(request);
     const body = (await response.json()) as { success: boolean; data: { items: Array<{ persisted: boolean }> } };
 
     expect(response.status).toBe(200);
@@ -55,8 +57,10 @@ describe("notifications route", () => {
         readAt: new Date("2026-05-08T09:30:00.000Z"),
       },
     ] as never);
+    vi.mocked(db.notification.count).mockResolvedValue(2 as never);
 
-    const response = await GET();
+    const request = new Request("http://localhost:3000/api/notifications");
+    const response = await GET(request);
     const body = (await response.json()) as {
       success: boolean;
       data: {

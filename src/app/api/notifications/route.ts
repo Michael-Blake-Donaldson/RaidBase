@@ -1,7 +1,10 @@
+import { z } from "zod";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth/options";
-import { ok } from "@/lib/api-response";
+import { ok, fail } from "@/lib/api-response";
+import { handleRouteError } from "@/lib/errors";
+import { requireUser } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
 import { type NotificationItem, notificationItems } from "@/lib/site-data";
 
@@ -56,69 +59,107 @@ function dbNotificationToItem(n: {
   };
 }
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
+export async function GET(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
 
-  // Anonymous users get demo/seed notifications so the tray isn't empty
-  if (!session?.user?.id) {
-    const items: NotificationItem[] = notificationItems.map((item) => ({
-      ...item,
-      persisted: false,
-    }));
-    return ok({ items });
+    // Anonymous users get demo/seed notifications so the tray isn't empty
+    if (!session?.user?.id) {
+      const items: NotificationItem[] = notificationItems.map((item) => ({
+        ...item,
+        persisted: false,
+      }));
+      return ok({ items, total: items.length, unread: 0 });
+    }
+
+    // Parse query parameters manually
+    const url = new URL(request.url);
+    const type = url.searchParams.get("type") ?? undefined;
+    const limit = Math.min(Math.max(1, parseInt(url.searchParams.get("limit") ?? "50")), 100);
+    const offset = Math.max(0, parseInt(url.searchParams.get("offset") ?? "0"));
+    const unreadOnly = url.searchParams.get("unreadOnly") === "true";
+
+    // Build where clause
+    const where: any = { userId: session.user.id };
+    if (type) {
+      where.type = type;
+    }
+    if (unreadOnly) {
+      where.readAt = null;
+    }
+
+    // Fetch total count for pagination
+    const total = await db.notification.count({ where });
+
+    // Authenticated users get their real notifications
+    const notifications = await db.notification.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        href: true,
+        type: true,
+        createdAt: true,
+        readAt: true,
+      },
+    });
+
+    const items = notifications.map(dbNotificationToItem);
+
+    // Count unread
+    const unread = await db.notification.count({
+      where: { userId: session.user.id, readAt: null },
+    });
+
+    return ok({ items, total, unread, limit, offset });
+  } catch (error) {
+    return handleRouteError(error);
   }
-
-  // Authenticated users get their real notifications only
-  const notifications = await db.notification.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    select: {
-      id: true,
-      title: true,
-      body: true,
-      href: true,
-      type: true,
-      createdAt: true,
-      readAt: true,
-    },
-  });
-
-  const items = notifications.map(dbNotificationToItem);
-  return ok({ items });
 }
 
 export async function PATCH(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return Response.json({ success: false, error: { code: "UNAUTHORIZED", message: "Sign in required." } }, { status: 401 });
-  }
+  try {
+    const user = await requireUser();
 
-  const body = await request.json().catch(() => ({})) as { id?: string; markAll?: boolean };
-
-  if (body.markAll) {
-    await db.notification.updateMany({
-      where: { userId: session.user.id, readAt: null },
-      data: { readAt: new Date() },
-    });
-    return ok({ markedAll: true });
-  }
-
-  if (body.id) {
-    const notification = await db.notification.findFirst({
-      where: { id: body.id, userId: session.user.id },
-    });
-    if (!notification) {
-      return Response.json({ success: false, error: { code: "NOT_FOUND", message: "Notification not found." } }, { status: 404 });
+    const body = await request.json().catch(() => null);
+    
+    if (!body) {
+      return fail("VALIDATION_ERROR", "Invalid payload.", 400);
     }
-    if (!notification.readAt) {
-      await db.notification.update({
-        where: { id: body.id },
+
+    if (body.markAll) {
+      await db.notification.updateMany({
+        where: { userId: user.id, readAt: null },
         data: { readAt: new Date() },
       });
+      return ok({ markedAll: true });
     }
-    return ok({ marked: true });
-  }
 
-  return Response.json({ success: false, error: { code: "BAD_REQUEST", message: "Provide id or markAll." } }, { status: 400 });
+    if (body.id) {
+      const notification = await db.notification.findFirst({
+        where: { id: body.id, userId: user.id },
+      });
+
+      if (!notification) {
+        return fail("NOT_FOUND", "Notification not found.", 404);
+      }
+
+      if (!notification.readAt) {
+        await db.notification.update({
+          where: { id: body.id },
+          data: { readAt: new Date() },
+        });
+      }
+
+      return ok({ marked: true });
+    }
+
+    return fail("BAD_REQUEST", "Provide id or markAll.", 400);
+  } catch (error) {
+    return handleRouteError(error);
+  }
 }
