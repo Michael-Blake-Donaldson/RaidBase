@@ -32,6 +32,17 @@ describe("settings export route", () => {
 
     const response = await GET();
     expect(response.status).toBe(401);
+
+    const body = (await response.json()) as {
+      success: boolean;
+      error: {
+        code: string;
+        message: string;
+      };
+    };
+
+    expect(body.success).toBe(false);
+    expect(body.error.code).toBe("UNAUTHORIZED");
   });
 
   it("returns 404 when account is missing", async () => {
@@ -40,6 +51,17 @@ describe("settings export route", () => {
 
     const response = await GET();
     expect(response.status).toBe(404);
+
+    const body = (await response.json()) as {
+      success: boolean;
+      error: {
+        code: string;
+        message: string;
+      };
+    };
+
+    expect(body.success).toBe(false);
+    expect(body.error.code).toBe("NOT_FOUND");
   });
 
   it("returns downloadable json export for account data", async () => {
@@ -79,5 +101,23 @@ describe("settings export route", () => {
     const body = await response.json();
     expect(body.user.id).toBe("u1");
     expect(body.user.username).toBe("ghosttrace");
+  });
+
+  it("returns 500 with standardized error payload when export fails unexpectedly", async () => {
+    vi.mocked(getServerSession).mockResolvedValue({ user: { id: "u1" } } as never);
+    vi.mocked(db.user.findUnique).mockRejectedValue(new Error("db down"));
+
+    const response = await GET();
+    const body = (await response.json()) as {
+      success: boolean;
+      error: {
+        code: string;
+        message: string;
+      };
+    };
+
+    expect(response.status).toBe(500);
+    expect(body.success).toBe(false);
+    expect(body.error.code).toBe("INTERNAL_SERVER_ERROR");
   });
 });
