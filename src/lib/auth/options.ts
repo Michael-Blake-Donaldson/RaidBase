@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { getAppBaseUrl, getAuthSecret } from "@/lib/env";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -42,7 +43,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(input) {
+      async authorize(input, req) {
         const parsed = credentialsSchema.safeParse(input);
 
         if (!parsed.success) {
@@ -50,6 +51,22 @@ export const authOptions: NextAuthOptions = {
         }
 
         const { email, password } = parsed.data;
+
+        // Rate limit by IP to prevent brute-force
+        const ip =
+          (req?.headers as Record<string, string | string[] | undefined> | undefined)?.["x-forwarded-for"] ??
+          "unknown";
+        const ipStr = Array.isArray(ip) ? ip[0] : (ip ?? "unknown");
+        const rateLimit = await enforceRateLimit({
+          key: `login:${ipStr}`,
+          limit: 10,
+          windowMs: 15 * 60 * 1000,
+        });
+
+        if (!rateLimit.ok) {
+          return null;
+        }
+
         const user = await db.user.findUnique({ where: { email } });
 
         if (!user || !user.passwordHash || user.status === "BANNED" || user.status === "DELETED") {
@@ -60,6 +77,9 @@ export const authOptions: NextAuthOptions = {
         if (!validPassword) {
           return null;
         }
+
+        // Update lastLoginAt asynchronously — don't block sign-in on DB write
+        db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => undefined);
 
         return {
           id: user.id,

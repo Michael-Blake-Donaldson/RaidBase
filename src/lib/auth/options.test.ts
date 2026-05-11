@@ -17,8 +17,13 @@ vi.mock("@/lib/db", () => ({
   db: {
     user: {
       findUnique: vi.fn(),
+      update: vi.fn().mockResolvedValue(undefined),
     },
   },
+}));
+
+vi.mock("@/lib/rate-limit", () => ({
+  enforceRateLimit: vi.fn().mockResolvedValue({ ok: true, remaining: 9, retryAfterMs: 0 }),
 }));
 
 import { db } from "@/lib/db";

@@ -27,6 +27,10 @@ vi.mock("@/lib/auth/username", () => ({
   validateUsername: vi.fn(),
 }));
 
+vi.mock("@/server/services/email", () => ({
+  sendEmailVerification: vi.fn().mockResolvedValue(undefined),
+}));
+
 import bcrypt from "bcryptjs";
 
 import { db } from "@/lib/db";

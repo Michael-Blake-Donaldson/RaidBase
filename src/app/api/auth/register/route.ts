@@ -1,11 +1,13 @@
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { randomBytes } from "crypto";
 import { z } from "zod";
 
+import { ok, fail } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { validateUsername } from "@/lib/auth/username";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { sendEmailVerification } from "@/server/services/email";
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -23,22 +25,21 @@ export async function POST(request: Request) {
   });
 
   if (!rateLimit.ok) {
-    return NextResponse.json(
-      { error: "Too many registration attempts. Try again shortly." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
-    );
+    const resp = fail("RATE_LIMITED", "Too many registration attempts. Try again shortly.", 429);
+    resp.headers.set("Retry-After", String(Math.ceil(rateLimit.retryAfterMs / 1000)));
+    return resp;
   }
 
   const body = await request.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid registration payload." }, { status: 400 });
+    return fail("VALIDATION_ERROR", "Invalid registration payload.", 400);
   }
 
   const usernameCheck = validateUsername(parsed.data.username);
   if (!usernameCheck.ok) {
-    return NextResponse.json({ error: usernameCheck.reason }, { status: 400 });
+    return fail("VALIDATION_ERROR", usernameCheck.reason, 400);
   }
 
   const existing = await db.user.findFirst({
@@ -49,16 +50,18 @@ export async function POST(request: Request) {
   });
 
   if (existing) {
-    return NextResponse.json({ error: "Email or username already in use." }, { status: 409 });
+    return fail("CONFLICT", "Email or username already in use.", 409);
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+  const verificationToken = randomBytes(32).toString("hex");
 
   const user = await db.user.create({
     data: {
       email: parsed.data.email,
       username: usernameCheck.normalized,
       passwordHash,
+      status: "EMAIL_UNVERIFIED",
       profile: {
         create: {
           displayName: usernameCheck.normalized,
@@ -76,6 +79,12 @@ export async function POST(request: Request) {
           status: "ACTIVE",
         },
       },
+      emailVerifTokens: {
+        create: {
+          token: verificationToken,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        },
+      },
     },
     select: {
       id: true,
@@ -84,5 +93,10 @@ export async function POST(request: Request) {
     },
   });
 
-  return NextResponse.json({ user }, { status: 201 });
+  // Fire-and-forget — registration should not fail if email is unavailable
+  sendEmailVerification({ to: user.email, token: verificationToken }).catch((err) => {
+    console.error("[register] Failed to send verification email:", err);
+  });
+
+  return ok({ user }, { status: 201 });
 }
