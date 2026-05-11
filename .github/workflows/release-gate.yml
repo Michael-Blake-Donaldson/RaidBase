@@ -1,0 +1,95 @@
+name: Release Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag or version identifier (e.g. v0.1.0)"
+        required: true
+        type: string
+      run_e2e:
+        description: "Run Playwright smoke tests"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  go-no-go:
+    name: Go/No-Go Validation
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: raidbase_release_gate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d raidbase_release_gate"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup environment
+        run: |
+          echo 'DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/raidbase_release_gate?schema=public"' > .env
+          echo 'STRICT_ENV_VALIDATION="true"' >> .env
+          echo 'NEXTAUTH_SECRET="release-gate-nextauth-secret"' >> .env
+          echo 'NEXTAUTH_URL="http://127.0.0.1:3000"' >> .env
+          echo 'STRIPE_SECRET_KEY="sk_test_release_gate"' >> .env
+          echo 'STRIPE_WEBHOOK_SECRET="whsec_release_gate"' >> .env
+          echo 'STRIPE_PRO_PRICE_ID="price_release_gate"' >> .env
+          echo 'UPSTASH_REDIS_REST_URL="https://upstash.example.invalid"' >> .env
+          echo 'UPSTASH_REDIS_REST_TOKEN="release-gate-token"' >> .env
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      - name: Apply migrations
+        run: npm run prisma:migrate:deploy
+
+      - name: Seed database
+        run: npm run db:seed
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit and integration tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browser
+        if: ${{ inputs.run_e2e }}
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E smoke tests
+        if: ${{ inputs.run_e2e }}
+        run: npm run test:e2e
+
+      - name: Upload release checklist
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-checklist
+          path: docs/release/release-checklist.md
+
+      - name: Gate summary
+        run: |
+          echo "Release gate passed for tag: ${{ inputs.release_tag }}"
+          echo "Checklist artifact uploaded: docs/release/release-checklist.md"

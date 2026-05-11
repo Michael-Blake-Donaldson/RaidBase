@@ -6,6 +6,8 @@ Use this checklist for every production release.
 
 The release does not ship unless all items below are complete:
 
+- GitHub Actions `Release Gate` workflow completed successfully for the target tag
+
 - `npm run lint` passes
 - targeted API and env regression tests pass
 - `npm run build` passes against a PostgreSQL `DATABASE_URL`
@@ -15,6 +17,21 @@ The release does not ship unless all items below are complete:
 - Stripe checkout, portal, and webhook flows are validated in staging
 - observability sink receives `web_vital_recorded` and `client_error_reported` events
 - release notes and rollback owner are assigned
+
+## Automated Gate
+
+Run the manual GitHub Actions workflow before every release candidate:
+
+- Workflow: `.github/workflows/release-gate.yml`
+- Inputs:
+	- `release_tag`: target version/tag identifier
+	- `run_e2e`: set to `true` for full smoke validation
+
+Expected result:
+
+- Workflow is green
+- `release-checklist` artifact is attached to the run
+- No failed lint, test, migration, or build steps
 
 ## Pre-Release Preparation
 
