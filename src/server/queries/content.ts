@@ -28,13 +28,13 @@ export async function readPlayers(viewerUsername?: string) {
   }
 }
 
-export async function readLfgPosts() {
+export async function readLfgPosts(limit: number = 50, offset: number = 0) {
   if (isProductionBuild) {
     return lfgPosts;
   }
 
   try {
-    const data = await getLfgPostsFromDb();
+    const data = await getLfgPostsFromDb(limit, offset);
     return data.length > 0 ? data : lfgPosts;
   } catch {
     return lfgPosts;

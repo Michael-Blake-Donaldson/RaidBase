@@ -150,7 +150,7 @@ export async function getRecommendedPlayersFromDb(viewerUsername?: string): Prom
   });
 }
 
-export async function getLfgPostsFromDb(): Promise<LfgCard[]> {
+export async function getLfgPostsFromDb(limit: number = 50, offset: number = 0): Promise<LfgCard[]> {
   const posts = await db.lfgPost.findMany({
     where: {
       status: "OPEN",
@@ -162,6 +162,8 @@ export async function getLfgPostsFromDb(): Promise<LfgCard[]> {
     orderBy: {
       createdAt: "desc",
     },
+    take: limit,
+    skip: offset,
   });
 
   return posts.map((post) => ({

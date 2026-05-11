@@ -1,7 +1,7 @@
 import { Filter } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
-import { LfgCard } from "@/components/raidbase";
+import { LfgCardContainer } from "@/components/raidbase";
 import { EmptyState } from "@/components/states";
 import { readLfgPosts } from "@/server/queries/content";
 
@@ -53,7 +53,7 @@ export default async function LfgPage() {
             />
           ) : (
             lfgPosts.map((post) => (
-              <LfgCard
+              <LfgCardContainer
                 key={post.id}
                 id={post.id}
                 title={post.title}

@@ -1,4 +1,5 @@
 export { LfgCard } from "./lfg-card";
+export { LfgCardContainer } from "./lfg-card-container";
 export { SquadCard } from "./squad-card";
 export { PlayerCard, ReputationBadge } from "./player-card";
 export { ClipCard } from "./clip-card";
