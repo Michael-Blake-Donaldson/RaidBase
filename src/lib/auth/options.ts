@@ -69,7 +69,13 @@ export const authOptions: NextAuthOptions = {
 
         const user = await db.user.findUnique({ where: { email } });
 
-        if (!user || !user.passwordHash || user.status === "BANNED" || user.status === "DELETED") {
+        if (
+          !user ||
+          !user.passwordHash ||
+          user.status === "BANNED" ||
+          user.status === "SUSPENDED" ||
+          user.status === "DELETED"
+        ) {
           return null;
         }
 
@@ -114,7 +120,12 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if (!currentUser || currentUser.status === "BANNED" || currentUser.status === "DELETED") {
+        if (
+          !currentUser ||
+          currentUser.status === "BANNED" ||
+          currentUser.status === "SUSPENDED" ||
+          currentUser.status === "DELETED"
+        ) {
           delete token.sub;
           delete token.role;
           delete token.username;

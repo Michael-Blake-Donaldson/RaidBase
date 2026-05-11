@@ -78,6 +78,30 @@ describe("authOptions callbacks", () => {
     expect(token.active).toBe(true);
   });
 
+  it("invalidates JWT identity when the user is suspended", async () => {
+    vi.mocked(db.user.findUnique).mockResolvedValue({
+      id: "u1",
+      role: "USER",
+      status: "SUSPENDED",
+      username: "raidlead",
+    } as never);
+
+    const token = await authOptions.callbacks!.jwt!({
+      token: {
+        sub: "u1",
+        role: "USER",
+        username: "raidlead",
+      },
+      user: null as never,
+      account: null,
+    });
+
+    expect(token.sub).toBeUndefined();
+    expect(token.role).toBeUndefined();
+    expect(token.username).toBeUndefined();
+    expect(token.active).toBe(false);
+  });
+
   it("clears session identity when the token has been invalidated", async () => {
     const session = await authOptions.callbacks!.session!({
       session: {

@@ -11,6 +11,19 @@ export async function GET() {
   }
 
   const reports = await db.report.findMany({
+    include: {
+      actions: {
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        include: {
+          moderator: {
+            select: {
+              username: true,
+            },
+          },
+        },
+      },
+    },
     orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
     take: 50,
   });

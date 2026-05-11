@@ -43,6 +43,11 @@ describe("admin reports route", () => {
     expect(body.data.reports).toHaveLength(2);
     expect(db.report.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
+        include: expect.objectContaining({
+          actions: expect.objectContaining({
+            take: 5,
+          }),
+        }),
         orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
         take: 50,
       }),
