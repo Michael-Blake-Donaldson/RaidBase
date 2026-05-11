@@ -1,6 +1,8 @@
 import { Activity, ShieldCheck, Users2 } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
+import { SquadCard } from "@/components/raidbase";
+import { EmptyState } from "@/components/states";
 import { readSquads } from "@/server/queries/content";
 
 export default async function SquadsPage() {
@@ -14,28 +16,28 @@ export default async function SquadsPage() {
       description="Persistent squads keep members, session history, role coverage, synergy, clip walls, and recruiting state visible in one shared operating surface."
     >
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="grid gap-4">
-          {squads.map((squad) => (
-            <article key={squad.name} className="rb-surface-strong rounded-[28px] p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="rb-text-strong text-2xl font-semibold">{squad.name}</h2>
-                  <p className="rb-text-muted mt-2 text-sm">{squad.game} • {squad.members} active members • {squad.status}</p>
-                </div>
-                <span className="rb-badge-info rounded-full px-3 py-1 text-sm font-semibold">
-                  {squad.synergy}% synergy
-                </span>
-              </div>
-              <p className="rb-text-body mt-4 text-sm leading-7">{squad.activity}</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {squad.openRoles.map((role) => (
-                  <span key={role} className="rb-pill rounded-full px-3 py-1 text-xs">
-                    {role}
-                  </span>
-                ))}
-              </div>
-            </article>
-          ))}
+        <section className="grid gap-4 content-start">
+          {squads.length === 0 ? (
+            <EmptyState
+              title="No squads yet"
+              description="Create a squad and invite your go-to teammates."
+            />
+          ) : (
+            squads.map((squad) => (
+              <SquadCard
+                key={squad.id}
+                id={squad.id}
+                name={squad.name}
+                game={squad.game}
+                members={squad.members}
+                openRoles={squad.openRoles}
+                synergy={squad.synergy}
+                status={squad.status}
+                activity={squad.activity}
+                privacy={squad.privacy}
+              />
+            ))
+          )}
         </section>
 
         <aside className="rb-surface-strong space-y-4 rounded-[28px] p-6">

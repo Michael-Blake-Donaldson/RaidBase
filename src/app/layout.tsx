@@ -4,6 +4,7 @@ import { Inter, Orbitron, Sora } from "next/font/google";
 import "./globals.css";
 
 import { WebVitalsReporter } from "@/components/web-vitals-reporter";
+import { ToastProvider } from "@/components/ui/toast";
 import { siteConfig } from "@/lib/site-config";
 
 const inter = Inter({
@@ -84,7 +85,9 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
         <WebVitalsReporter />
       </body>
     </html>

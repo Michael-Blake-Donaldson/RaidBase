@@ -1,6 +1,8 @@
-import { Filter, Mic, TimerReset, Users } from "lucide-react";
+import { Filter } from "lucide-react";
 
 import { SiteShell } from "@/components/site-shell";
+import { LfgCard } from "@/components/raidbase";
+import { EmptyState } from "@/components/states";
 import { readLfgPosts } from "@/server/queries/content";
 
 const filterPills = [
@@ -43,53 +45,29 @@ export default async function LfgPage() {
           </div>
         </aside>
 
-        <section className="grid gap-4">
-          {lfgPosts.map((post) => (
-            <article key={post.title} className="rb-surface-strong rounded-[28px] p-6">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <h2 className="rb-text-strong text-xl font-semibold">{post.title}</h2>
-                  <p className="rb-text-muted mt-2 text-sm">{post.game} • {post.region} • {post.rank}</p>
-                </div>
-                <span className="rb-badge-success rounded-full px-3 py-1 text-xs font-medium">
-                  {post.openSpots} open spots
-                </span>
-              </div>
-
-              <div className="mt-5 grid gap-4 lg:grid-cols-3">
-                <div className="rb-surface-soft rounded-[22px] p-4">
-                  <p className="rb-text-strong mb-2 flex items-center gap-2 text-sm font-medium">
-                    <Users className="rb-icon h-4 w-4" />
-                    Roles needed
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {post.roles.map((role) => (
-                      <span key={role} className="rb-pill rounded-full px-3 py-1 text-xs">
-                        {role}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="rb-surface-soft rounded-[22px] p-4">
-                  <p className="rb-text-strong mb-2 flex items-center gap-2 text-sm font-medium">
-                    <TimerReset className="rb-icon h-4 w-4" />
-                    Schedule and tone
-                  </p>
-                  <p className="rb-text-body text-sm leading-7">{post.schedule}</p>
-                  <p className="rb-text-muted text-sm">{post.tone}</p>
-                </div>
-                <div className="rb-surface-soft rounded-[22px] p-4">
-                  <p className="rb-text-strong mb-2 flex items-center gap-2 text-sm font-medium">
-                    <Mic className="rb-icon h-4 w-4" />
-                    Comms expectation
-                  </p>
-                  <p className="rb-text-body text-sm leading-7">
-                    {post.micRequired ? "Microphone required for callouts and review" : "Mic optional, but concise communication preferred"}
-                  </p>
-                </div>
-              </div>
-            </article>
-          ))}
+        <section className="grid gap-4 content-start">
+          {lfgPosts.length === 0 ? (
+            <EmptyState
+              title="No LFG posts yet"
+              description="Be the first to post — your squad is waiting."
+            />
+          ) : (
+            lfgPosts.map((post) => (
+              <LfgCard
+                key={post.id}
+                id={post.id}
+                title={post.title}
+                game={post.game}
+                region={post.region}
+                rank={post.rank}
+                roles={post.roles}
+                schedule={post.schedule}
+                tone={post.tone}
+                micRequired={post.micRequired}
+                openSpots={post.openSpots}
+              />
+            ))
+          )}
         </section>
       </div>
     </SiteShell>
