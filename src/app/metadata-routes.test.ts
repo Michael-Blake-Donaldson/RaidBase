@@ -25,6 +25,8 @@ describe("metadata routes", () => {
 
     expect(urls).toContain(`${siteConfig.url}/privacy`);
     expect(urls).toContain(`${siteConfig.url}/terms`);
+    expect(urls).toContain(`${siteConfig.url}/community-guidelines`);
+    expect(urls).toContain(`${siteConfig.url}/support`);
     expect(urls).toContain(`${siteConfig.url}/settings/security`);
   });
 

@@ -6,6 +6,20 @@ export const siteConfig = {
   links: {
     terms: "/terms",
     privacy: "/privacy",
+    communityGuidelines: "/community-guidelines",
+    support: "/support",
   },
-  routes: ["/", "/lfg", "/squads", "/clips", "/privacy", "/terms", "/settings", "/settings/security", "/admin"],
+  routes: [
+    "/",
+    "/lfg",
+    "/squads",
+    "/clips",
+    "/privacy",
+    "/terms",
+    "/community-guidelines",
+    "/support",
+    "/settings",
+    "/settings/security",
+    "/admin",
+  ],
 };

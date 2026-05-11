@@ -134,6 +134,12 @@ export async function SiteShell({
             <Link href={siteConfig.links.terms} className="transition hover:text-[#0f1419]">
               Terms
             </Link>
+            <Link href={siteConfig.links.communityGuidelines} className="transition hover:text-[#0f1419]">
+              Community guidelines
+            </Link>
+            <Link href={siteConfig.links.support} className="transition hover:text-[#0f1419]">
+              Support
+            </Link>
             <p>Built for competitive PC sessions, not generic chat.</p>
           </div>
         </div>
