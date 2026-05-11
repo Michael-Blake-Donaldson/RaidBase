@@ -37,10 +37,10 @@ describe("admin reports route", () => {
     ] as never);
 
     const response = await GET();
-    const body = (await response.json()) as { reports: Array<{ id: string }> };
+    const body = (await response.json()) as { success: boolean; data: { reports: Array<{ id: string }> } };
 
     expect(response.status).toBe(200);
-    expect(body.reports).toHaveLength(2);
+    expect(body.data.reports).toHaveLength(2);
     expect(db.report.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         orderBy: [{ severity: "desc" }, { createdAt: "desc" }],

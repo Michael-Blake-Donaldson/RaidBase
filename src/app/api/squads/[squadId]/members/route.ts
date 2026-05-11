@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
 
-import { authOptions } from "@/lib/auth/options";
+import { ok, fail } from "@/lib/api-response";
+import { handleRouteError } from "@/lib/errors";
+import { requireUser } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -19,105 +19,102 @@ type RouteContext = {
 };
 
 export async function POST(request: Request, context: RouteContext) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  }
+  try {
+    const user = await requireUser();
+    const { squadId } = await context.params;
 
-  const { squadId } = await context.params;
+    const rateLimit = await enforceRateLimit({
+      key: `squad-join:${user.id}:${getClientIp(request)}`,
+      limit: 20,
+      windowMs: 60_000,
+    });
 
-  const rateLimit = await enforceRateLimit({
-    key: `squad-join:${session.user.id}:${getClientIp(request)}`,
-    limit: 20,
-    windowMs: 60_000,
-  });
+    if (!rateLimit.ok) {
+      return fail("RATE_LIMITED", "Too many join attempts. Try again shortly.", 429);
+    }
 
-  if (!rateLimit.ok) {
-    return NextResponse.json(
-      { error: "Too many join attempts. Try again shortly." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
-    );
-  }
+    const body = await request.json().catch(() => null);
+    const parsed = joinSchema.safeParse(body);
 
-  const body = await request.json().catch(() => null);
-  const parsed = joinSchema.safeParse(body);
+    if (!parsed.success) {
+      return fail("VALIDATION_ERROR", "Invalid join payload.", 400);
+    }
 
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid join payload." }, { status: 400 });
-  }
-
-  const squad = await db.squad.findUnique({
-    where: { id: squadId },
-    select: {
-      id: true,
-      ownerId: true,
-      privacy: true,
-      inviteCode: true,
-    },
-  });
-
-  if (!squad) {
-    return NextResponse.json({ error: "Squad not found." }, { status: 404 });
-  }
-
-  if (squad.ownerId === session.user.id) {
-    return NextResponse.json({ error: "You already own this squad." }, { status: 400 });
-  }
-
-  const existingMembership = await db.squadMember.findUnique({
-    where: {
-      squadId_userId: {
-        squadId,
-        userId: session.user.id,
+    const squad = await db.squad.findUnique({
+      where: { id: squadId },
+      select: {
+        id: true,
+        ownerId: true,
+        privacy: true,
+        inviteCode: true,
       },
-    },
-    select: {
-      id: true,
-      status: true,
-    },
-  });
+    });
 
-  if (existingMembership?.status === "ACTIVE") {
-    return NextResponse.json({ error: "You are already a member of this squad." }, { status: 409 });
-  }
+    if (!squad) {
+      return fail("NOT_FOUND", "Squad not found.", 404);
+    }
 
-  const inviteCode = parsed.data.inviteCode?.trim().toUpperCase() ?? "";
-  const requiresInviteCode = squad.privacy !== "PUBLIC";
-  if (requiresInviteCode && (!inviteCode || inviteCode !== squad.inviteCode)) {
-    return NextResponse.json({ error: "Invite code is required for this squad." }, { status: 403 });
-  }
+    if (squad.ownerId === user.id) {
+      return fail("BAD_REQUEST", "You already own this squad.", 400);
+    }
 
-  const member = existingMembership
-    ? await db.squadMember.update({
-        where: { squadId_userId: { squadId, userId: session.user.id } },
-        data: { status: "ACTIVE", role: "Member" },
-        select: { id: true, status: true },
-      })
-    : await db.squadMember.create({
-        data: {
+    const existingMembership = await db.squadMember.findUnique({
+      where: {
+        squadId_userId: {
           squadId,
-          userId: session.user.id,
-          role: "Member",
-          status: "ACTIVE",
+          userId: user.id,
         },
-        select: { id: true, status: true },
-      });
+      },
+      select: {
+        id: true,
+        status: true,
+      },
+    });
 
-  await createUserNotification({
-    userId: squad.ownerId,
-    type: "squad_joined",
-    title: "New squad member joined",
-    body: `${session.user.username} joined your squad.`,
-    linkUrl: "/squads",
-  });
+    if (existingMembership?.status === "ACTIVE") {
+      return fail("CONFLICT", "You are already a member of this squad.", 409);
+    }
 
-  await createUserNotification({
-    userId: session.user.id,
-    type: "squad_membership_confirmed",
-    title: "You joined a squad",
-    body: "Your membership is active. Coordinate your next session.",
-    linkUrl: "/squads",
-  });
+    const inviteCode = parsed.data.inviteCode?.trim().toUpperCase() ?? "";
+    const requiresInviteCode = squad.privacy !== "PUBLIC";
+    if (requiresInviteCode && (!inviteCode || inviteCode !== squad.inviteCode)) {
+      return fail("FORBIDDEN", "Invite code is required for this squad.", 403);
+    }
 
-  return NextResponse.json({ member }, { status: 201 });
+    const member = existingMembership
+      ? await db.squadMember.update({
+          where: { squadId_userId: { squadId, userId: user.id } },
+          data: { status: "ACTIVE", role: "Member" },
+          select: { id: true, status: true },
+        })
+      : await db.squadMember.create({
+          data: {
+            squadId,
+            userId: user.id,
+            role: "Member",
+            status: "ACTIVE",
+          },
+          select: { id: true, status: true },
+        });
+
+    await createUserNotification({
+      userId: squad.ownerId,
+      type: "SQUAD_REQUEST_ACCEPTED",
+      title: "New squad member joined",
+      body: `${user.username} joined your squad.`,
+      href: "/squads",
+    });
+
+    await createUserNotification({
+      userId: user.id,
+      type: "SQUAD_REQUEST_ACCEPTED",
+      title: "You joined a squad",
+      body: "Your membership is active. Coordinate your next session.",
+      href: "/squads",
+    });
+
+    return ok({ member }, { status: 201 });
+  } catch (error) {
+    return handleRouteError(error);
+  }
 }

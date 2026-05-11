@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
 
-import { authOptions } from "@/lib/auth/options";
+import { ok, fail } from "@/lib/api-response";
+import { handleRouteError } from "@/lib/errors";
+import { requireUser } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -95,83 +95,109 @@ export async function GET() {
     take: 40,
   });
 
-  return NextResponse.json({ clips });
+  return ok({ clips });
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  }
+  try {
+    const user = await requireUser();
 
-  const rateLimit = await enforceRateLimit({
-    key: `clips-create:${session.user.id}:${getClientIp(request)}`,
-    limit: 12,
-    windowMs: 60_000,
-  });
-
-  if (!rateLimit.ok) {
-    return NextResponse.json(
-      { error: "Too many upload attempts. Try again shortly." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
-    );
-  }
-
-  const slotCheck = await assertClipSlots(session.user.id);
-  if (!slotCheck.ok) {
-    return NextResponse.json(
-      {
-        error: `Clip limit reached (${slotCheck.clipLimit}). Upgrade to Pro for more slots.`,
-        clipLimit: slotCheck.clipLimit,
-      },
-      { status: 403 },
-    );
-  }
-
-  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
-
-  if (contentType.includes("multipart/form-data")) {
-    const form = await request.formData();
-    const file = form.get("file");
-    const titleRaw = form.get("title");
-    const gameSlugRaw = form.get("gameSlug");
-    const visibilityRaw = form.get("visibility");
-
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: "No clip file provided." }, { status: 400 });
-    }
-
-    const title = typeof titleRaw === "string" ? titleRaw.trim() : "";
-    if (title.length < 4 || title.length > 120) {
-      return NextResponse.json({ error: "Title must be between 4 and 120 characters." }, { status: 400 });
-    }
-
-    if (!allowedVideoMimeTypes.has(file.type)) {
-      return NextResponse.json({ error: "Unsupported file type. Use mp4, webm, or mov." }, { status: 400 });
-    }
-
-    if (file.size > maxUploadBytes) {
-      return NextResponse.json({ error: "Clip is too large. Max size is 50MB." }, { status: 400 });
-    }
-
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const storedClip = await saveUploadedClipFile({
-      mimeType: file.type,
-      fileBuffer,
+    const rateLimit = await enforceRateLimit({
+      key: `clips-create:${user.id}:${getClientIp(request)}`,
+      limit: 12,
+      windowMs: 60_000,
     });
 
-    const gameSlug = typeof gameSlugRaw === "string" ? gameSlugRaw.trim() : "";
-    const gameId = await resolveGameId(gameSlug || undefined);
-    const visibility = visibilityRaw === "private" ? "private" : "public";
+    if (!rateLimit.ok) {
+      return fail("RATE_LIMITED", "Too many upload attempts. Try again shortly.", 429);
+    }
 
+    const slotCheck = await assertClipSlots(user.id);
+    if (!slotCheck.ok) {
+      return fail("FORBIDDEN", `Clip limit reached (${slotCheck.clipLimit}). Upgrade to Pro for more slots.`, 403);
+    }
+
+    const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
+
+    if (contentType.includes("multipart/form-data")) {
+      const form = await request.formData();
+      const file = form.get("file");
+      const titleRaw = form.get("title");
+      const gameSlugRaw = form.get("gameSlug");
+      const visibilityRaw = form.get("visibility");
+
+      if (!(file instanceof File)) {
+        return fail("BAD_REQUEST", "No clip file provided.", 400);
+      }
+
+      const title = typeof titleRaw === "string" ? titleRaw.trim() : "";
+      if (title.length < 4 || title.length > 120) {
+        return fail("BAD_REQUEST", "Title must be between 4 and 120 characters.", 400);
+      }
+
+      if (!allowedVideoMimeTypes.has(file.type)) {
+        return fail("BAD_REQUEST", "Unsupported file type. Use mp4, webm, or mov.", 400);
+      }
+
+      if (file.size > maxUploadBytes) {
+        return fail("BAD_REQUEST", "Clip is too large. Max size is 50MB.", 400);
+      }
+
+      const fileBuffer = Buffer.from(await file.arrayBuffer());
+      const storedClip = await saveUploadedClipFile({
+        mimeType: file.type,
+        fileBuffer,
+      });
+
+      const gameSlug = typeof gameSlugRaw === "string" ? gameSlugRaw.trim() : "";
+      const gameId = await resolveGameId(gameSlug || undefined);
+      const visibility = visibilityRaw === "private" ? "private" : "public";
+
+      const created = await db.clip.create({
+        data: {
+          userId: user.id,
+          gameId,
+          title,
+          url: storedClip.publicUrl,
+          provider: storedClip.provider,
+          visibility,
+          featured: false,
+          viewCount: 0,
+        },
+        include: {
+          game: true,
+        },
+      });
+
+      await createUserNotification({
+        userId: user.id,
+        type: "GENERAL",
+        title: "Clip uploaded",
+        body: `"${created.title}" is now in your clip showcase.`,
+        href: "/clips",
+      });
+
+      return ok({ clip: created }, { status: 201 });
+    }
+
+    const body = await request.json().catch(() => null);
+    const parsed = externalClipSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return fail("VALIDATION_ERROR", "Invalid clip payload.", 400);
+    }
+
+    const gameId = await resolveGameId(parsed.data.gameSlug);
     const created = await db.clip.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         gameId,
-        title,
-        url: storedClip.publicUrl,
-        provider: storedClip.provider,
-        visibility,
+        title: parsed.data.title.trim(),
+        url: parsed.data.url,
+        provider: providerFromUrl(parsed.data.url),
+        tags: parsed.data.tags ?? [],
+        thumbnailUrl: parsed.data.thumbnailUrl,
+        visibility: parsed.data.visibility,
         featured: false,
         viewCount: 0,
       },
@@ -181,49 +207,15 @@ export async function POST(request: Request) {
     });
 
     await createUserNotification({
-      userId: session.user.id,
-      type: "clip_uploaded",
-      title: "Clip uploaded",
-      body: `\"${created.title}\" is now in your clip showcase.`,
-      linkUrl: "/clips",
+      userId: user.id,
+      type: "GENERAL",
+      title: "Clip link added",
+      body: `"${created.title}" was added to your showcase.`,
+      href: "/clips",
     });
 
-    return NextResponse.json({ clip: created }, { status: 201 });
+    return ok({ clip: created }, { status: 201 });
+  } catch (error) {
+    return handleRouteError(error);
   }
-
-  const body = await request.json().catch(() => null);
-  const parsed = externalClipSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid clip payload." }, { status: 400 });
-  }
-
-  const gameId = await resolveGameId(parsed.data.gameSlug);
-  const created = await db.clip.create({
-    data: {
-      userId: session.user.id,
-      gameId,
-      title: parsed.data.title.trim(),
-      url: parsed.data.url,
-      provider: providerFromUrl(parsed.data.url),
-      tags: parsed.data.tags ?? [],
-      thumbnailUrl: parsed.data.thumbnailUrl,
-      visibility: parsed.data.visibility,
-      featured: false,
-      viewCount: 0,
-    },
-    include: {
-      game: true,
-    },
-  });
-
-  await createUserNotification({
-    userId: session.user.id,
-    type: "clip_added",
-    title: "Clip link added",
-    body: `\"${created.title}\" was added to your showcase.`,
-    linkUrl: "/clips",
-  });
-
-  return NextResponse.json({ clip: created }, { status: 201 });
 }

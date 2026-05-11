@@ -28,6 +28,22 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_TOKEN: optionalConfig,
   OBSERVABILITY_WEBHOOK_URL: z.string().url().optional(),
   OBSERVABILITY_SERVICE_NAME: optionalConfig,
+  // Email provider (required in production for verification / password reset)
+  EMAIL_FROM: optionalConfig,
+  RESEND_API_KEY: optionalConfig,
+  // Cloud storage for clips/avatars (required in production)
+  STORAGE_PROVIDER: z.enum(["local", "s3", "r2", "supabase", "uploadthing"]).default("local"),
+  STORAGE_BUCKET: optionalConfig,
+  STORAGE_REGION: optionalConfig,
+  STORAGE_ACCESS_KEY_ID: optionalConfig,
+  STORAGE_SECRET_ACCESS_KEY: optionalConfig,
+  STORAGE_ENDPOINT: optionalConfig,  // for R2 / custom S3-compatible
+  STORAGE_PUBLIC_URL: optionalConfig, // base public CDN URL for stored files
+  // Error tracking
+  SENTRY_DSN: optionalConfig,
+  // Analytics
+  NEXT_PUBLIC_POSTHOG_KEY: optionalConfig,
+  NEXT_PUBLIC_POSTHOG_HOST: optionalConfig,
 });
 
 const env = envSchema.parse(process.env);
@@ -104,4 +120,37 @@ export function getObservabilityEnv() {
     serviceName: env.OBSERVABILITY_SERVICE_NAME ?? "raidbase-web",
     environment: env.NODE_ENV,
   } as const;
+}
+
+export function getEmailEnv() {
+  if (env.NODE_ENV === "production" && env.STRICT_ENV_VALIDATION && !isProductionBuild) {
+    requiredInProduction("RESEND_API_KEY", env.RESEND_API_KEY);
+    requiredInProduction("EMAIL_FROM", env.EMAIL_FROM);
+  }
+  return {
+    apiKey: env.RESEND_API_KEY ?? null,
+    from: env.EMAIL_FROM ?? "noreply@raidbase.gg",
+  } as const;
+}
+
+export function getStorageEnv() {
+  const provider = env.STORAGE_PROVIDER;
+  if (env.NODE_ENV === "production" && env.STRICT_ENV_VALIDATION && !isProductionBuild && provider !== "local") {
+    requiredInProduction("STORAGE_BUCKET", env.STORAGE_BUCKET);
+    requiredInProduction("STORAGE_ACCESS_KEY_ID", env.STORAGE_ACCESS_KEY_ID);
+    requiredInProduction("STORAGE_SECRET_ACCESS_KEY", env.STORAGE_SECRET_ACCESS_KEY);
+  }
+  return {
+    provider,
+    bucket: env.STORAGE_BUCKET ?? null,
+    region: env.STORAGE_REGION ?? "auto",
+    accessKeyId: env.STORAGE_ACCESS_KEY_ID ?? null,
+    secretAccessKey: env.STORAGE_SECRET_ACCESS_KEY ?? null,
+    endpoint: env.STORAGE_ENDPOINT ?? null,
+    publicUrl: env.STORAGE_PUBLIC_URL ?? null,
+  } as const;
+}
+
+export function getSentryDsn() {
+  return env.SENTRY_DSN ?? null;
 }

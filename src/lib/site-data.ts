@@ -62,7 +62,7 @@ export type ReportCard = {
   targetType: string;
   reason: string;
   severity: "Low" | "Medium" | "High";
-  statusCode: "OPEN" | "IN_REVIEW" | "RESOLVED" | "DISMISSED";
+  statusCode: "OPEN" | "IN_REVIEW" | "ACTION_TAKEN" | "DISMISSED";
   status: string;
   evidence: string;
   reporter: string;

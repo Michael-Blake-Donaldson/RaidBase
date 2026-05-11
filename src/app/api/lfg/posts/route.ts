@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
 
-import { authOptions } from "@/lib/auth/options";
+import { ok, fail } from "@/lib/api-response";
+import { handleRouteError } from "@/lib/errors";
+import { requireUser } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -24,65 +24,63 @@ const createLfgSchema = z.object({
 
 export async function GET() {
   const posts = await readLfgPosts();
-  return NextResponse.json({ posts });
+  return ok({ posts });
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+  try {
+    const user = await requireUser();
+
+    const rateLimit = await enforceRateLimit({
+      key: `lfg-create:${user.id}:${getClientIp(request)}`,
+      limit: 15,
+      windowMs: 60_000,
+    });
+
+    if (!rateLimit.ok) {
+      return fail("RATE_LIMITED", "Too many post attempts. Try again shortly.", 429);
+    }
+
+    const body = await request.json().catch(() => null);
+    const parsed = createLfgSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return fail("VALIDATION_ERROR", "Invalid LFG payload.", 400);
+    }
+
+    const game = await db.game.findUnique({ where: { slug: parsed.data.gameSlug.toLowerCase() } });
+    if (!game) {
+      return fail("NOT_FOUND", "Unknown game.", 400);
+    }
+
+    const created = await db.lfgPost.create({
+      data: {
+        creatorId: user.id,
+        gameId: game.id,
+        title: parsed.data.title,
+        mode: parsed.data.mode,
+        rankMin: parsed.data.rankMin,
+        rankMax: parsed.data.rankMax,
+        region: parsed.data.region,
+        rolesNeeded: parsed.data.rolesNeeded,
+        micRequired: parsed.data.micRequired,
+        tone: parsed.data.tone,
+        schedule: parsed.data.schedule,
+        status: "OPEN",
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 8),
+      },
+    });
+
+    await createUserNotification({
+      userId: user.id,
+      type: "GENERAL",
+      title: "Your LFG post is live",
+      body: `Your post "${created.title}" is now visible in the board.`,
+      href: "/lfg",
+    });
+
+    return ok({ post: created }, { status: 201 });
+  } catch (error) {
+    return handleRouteError(error);
   }
-
-  const rateLimit = await enforceRateLimit({
-    key: `lfg-create:${session.user.id}:${getClientIp(request)}`,
-    limit: 15,
-    windowMs: 60_000,
-  });
-
-  if (!rateLimit.ok) {
-    return NextResponse.json(
-      { error: "Too many post attempts. Try again shortly." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
-    );
-  }
-
-  const body = await request.json().catch(() => null);
-  const parsed = createLfgSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid LFG payload." }, { status: 400 });
-  }
-
-  const game = await db.game.findUnique({ where: { slug: parsed.data.gameSlug.toLowerCase() } });
-  if (!game) {
-    return NextResponse.json({ error: "Unknown game." }, { status: 400 });
-  }
-
-  const created = await db.lfgPost.create({
-    data: {
-      creatorId: session.user.id,
-      gameId: game.id,
-      title: parsed.data.title,
-      mode: parsed.data.mode,
-      rankMin: parsed.data.rankMin,
-      rankMax: parsed.data.rankMax,
-      region: parsed.data.region,
-      rolesNeeded: parsed.data.rolesNeeded,
-      micRequired: parsed.data.micRequired,
-      tone: parsed.data.tone,
-      schedule: parsed.data.schedule,
-      status: "OPEN",
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 8),
-    },
-  });
-
-  await createUserNotification({
-    userId: session.user.id,
-    type: "lfg_post_created",
-    title: "Your LFG post is live",
-    body: `Your post \"${created.title}\" is now visible in the board.`,
-    linkUrl: "/lfg",
-  });
-
-  return NextResponse.json({ post: created }, { status: 201 });
 }

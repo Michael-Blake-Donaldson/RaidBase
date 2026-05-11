@@ -39,6 +39,8 @@ describe("authOptions callbacks", () => {
         username: "ghosttrace",
         active: true,
       },
+      user: null as never,
+      account: null,
     });
 
     expect(token.sub).toBeUndefined();
@@ -61,6 +63,8 @@ describe("authOptions callbacks", () => {
         role: "USER",
         username: "ghosttrace",
       },
+      user: null as never,
+      account: null,
     });
 
     expect(token.sub).toBe("u1");
@@ -79,14 +83,17 @@ describe("authOptions callbacks", () => {
           email: "ghost@example.com",
         },
         expires: new Date(Date.now() + 60_000).toISOString(),
-      },
+      } as never,
       token: {
         active: false,
       },
+      user: null as never,
+      newSession: null,
+      trigger: "update" as never,
     });
 
-    expect(session.user.id).toBe("");
-    expect(session.user.role).toBe("USER");
-    expect(session.user.username).toBe("");
+    expect((session as never as { user: { id: string; role: string; username: string } }).user.id).toBe("");
+    expect((session as never as { user: { id: string; role: string; username: string } }).user.role).toBe("USER");
+    expect((session as never as { user: { id: string; role: string; username: string } }).user.username).toBe("");
   });
 });

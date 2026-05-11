@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
+import { ok, fail } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
 
@@ -22,7 +22,7 @@ export async function GET() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    return fail("UNAUTHORIZED", "Authentication required.", 401);
   }
 
   const profile = await db.profile.findUnique({
@@ -41,24 +41,24 @@ export async function GET() {
   });
 
   if (!profile) {
-    return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+    return fail("NOT_FOUND", "Profile not found.", 404);
   }
 
-  return NextResponse.json({ profile });
+  return ok({ profile });
 }
 
 export async function PATCH(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    return fail("UNAUTHORIZED", "Authentication required.", 401);
   }
 
   const payload = await request.json().catch(() => null);
   const parsed = updateProfileSchema.safeParse(payload);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid settings payload." }, { status: 400 });
+    return fail("VALIDATION_ERROR", "Invalid settings payload.", 400);
   }
 
   const data = parsed.data;
@@ -90,5 +90,5 @@ export async function PATCH(request: Request) {
     },
   });
 
-  return NextResponse.json({ profile });
+  return ok({ profile });
 }

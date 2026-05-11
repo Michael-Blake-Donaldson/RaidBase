@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+import { ok, fail } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
 
@@ -18,7 +18,7 @@ type RouteContext = {
 export async function PATCH(request: Request, context: RouteContext) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    return fail("UNAUTHORIZED", "Authentication required.", 401);
   }
 
   const { notificationId } = await context.params;
@@ -26,7 +26,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const body = await request.json().catch(() => null);
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid notification action." }, { status: 400 });
+    return fail("VALIDATION_ERROR", "Invalid notification action.", 400);
   }
 
   const notification = await db.notification.findFirst({
@@ -40,7 +40,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   });
 
   if (!notification) {
-    return NextResponse.json({ error: "Notification not found." }, { status: 404 });
+    return fail("NOT_FOUND", "Notification not found.", 404);
   }
 
   if (parsed.data.action === "dismiss") {
@@ -50,7 +50,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
     });
 
-    return NextResponse.json({ ok: true, deleted: true });
+    return ok({ deleted: true });
   }
 
   if (parsed.data.action === "open") {
@@ -63,7 +63,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
     });
 
-    return NextResponse.json({ ok: true, resolved: false });
+    return ok({ resolved: false });
   }
 
   await db.notification.update({
@@ -75,5 +75,5 @@ export async function PATCH(request: Request, context: RouteContext) {
     },
   });
 
-  return NextResponse.json({ ok: true, resolved: true });
+  return ok({ resolved: true });
 }

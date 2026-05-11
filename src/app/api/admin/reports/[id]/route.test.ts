@@ -28,7 +28,7 @@ describe("admin report update route", () => {
     const request = new Request("http://localhost/api/admin/reports/r1", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "RESOLVED" }),
+      body: JSON.stringify({ status: "IN_REVIEW" }),
     });
 
     const response = await PATCH(request, { params: Promise.resolve({ id: "r1" }) });
@@ -80,7 +80,7 @@ describe("admin report update route", () => {
     const request = new Request("http://localhost/api/admin/reports/missing", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ status: "RESOLVED" }),
+      body: JSON.stringify({ status: "ACTION_TAKEN" }),
     });
 
     const response = await PATCH(request, { params: Promise.resolve({ id: "missing" }) });

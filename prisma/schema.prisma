@@ -11,12 +11,15 @@ enum UserRole {
   USER
   MODERATOR
   ADMIN
+  OWNER
 }
 
 enum UserStatus {
   ACTIVE
+  EMAIL_UNVERIFIED
   SUSPENDED
   BANNED
+  DELETED
 }
 
 enum VerificationStatus {
@@ -77,8 +80,33 @@ enum ReportTargetType {
 enum ReportStatus {
   OPEN
   IN_REVIEW
-  RESOLVED
+  ACTION_TAKEN
   DISMISSED
+}
+
+enum ModerationActionType {
+  WARN_USER
+  HIDE_CONTENT
+  DELETE_CONTENT
+  SUSPEND_USER
+  BAN_USER
+  RESTORE_CONTENT
+  DISMISS_REPORT
+}
+
+enum NotificationType {
+  LFG_JOIN_REQUEST
+  LFG_REQUEST_ACCEPTED
+  LFG_REQUEST_DECLINED
+  SQUAD_INVITE
+  SQUAD_JOIN_REQUEST
+  SQUAD_REQUEST_ACCEPTED
+  SQUAD_MEMBER_REMOVED
+  REVIEW_RECEIVED
+  CLIP_REPORTED
+  MODERATION_ACTION
+  ACCOUNT_SECURITY
+  GENERAL
 }
 
 enum SeverityLevel {
@@ -88,249 +116,279 @@ enum SeverityLevel {
 }
 
 model User {
-  id              String                @id @default(cuid())
-  email           String                @unique
-  username        String                @unique
-  passwordHash    String?
-  oauthProvider   String?
-  oauthSubject    String?
-  role            UserRole              @default(USER)
-  status          UserStatus            @default(ACTIVE)
-  emailVerifiedAt DateTime?
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  lastLoginAt     DateTime?
-  profile         Profile?
-  userGames       UserGame[]
-  createdLfgPosts LfgPost[]             @relation("LfgCreator")
-  lfgApplications LfgApplication[]
-  ownedSquads     Squad[]               @relation("SquadOwner")
-  squadMembership SquadMember[]
-  createdSessions Session[]             @relation("SessionCreator")
-  sessionRecords  SessionParticipant[]
-  writtenReviews  Review[]              @relation("Reviewer")
-  receivedReviews Review[]              @relation("Reviewed")
-  reputation      ReputationAggregate?
-  clips           Clip[]
-  notifications   Notification[]
-  subscription    Subscription?
-  reportsFiled    Report[]              @relation("Reporter")
-  reportsModerated Report[]             @relation("Moderator")
+  id                  String                   @id @default(cuid())
+  email               String                   @unique
+  username            String                   @unique
+  passwordHash        String?
+  oauthProvider       String?
+  oauthSubject        String?
+  role                UserRole                 @default(USER)
+  status              UserStatus               @default(EMAIL_UNVERIFIED)
+  emailVerifiedAt     DateTime?
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  lastLoginAt         DateTime?
+  profile             Profile?
+  userGames           UserGame[]
+  createdLfgPosts     LfgPost[]                @relation("LfgCreator")
+  lfgApplications     LfgApplication[]
+  ownedSquads         Squad[]                  @relation("SquadOwner")
+  squadMembership     SquadMember[]
+  createdSessions     Session[]                @relation("SessionCreator")
+  sessionRecords      SessionParticipant[]
+  writtenReviews      Review[]                 @relation("Reviewer")
+  receivedReviews     Review[]                 @relation("Reviewed")
+  reputation          ReputationAggregate?
+  clips               Clip[]
+  notifications       Notification[]
+  subscription        Subscription?
+  reportsFiled        Report[]                 @relation("Reporter")
+  reportsAbout        Report[]                 @relation("ReportedUser")
+  reportsModerated    Report[]                 @relation("Moderator")
+  moderationActions   ModerationAction[]
+  emailVerifTokens    EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+  squadJoinRequests   SquadJoinRequest[]
+
+  @@index([status])
+  @@index([role])
+  @@index([createdAt])
 }
 
 model Profile {
-  id             String  @id @default(cuid())
-  userId         String  @unique
-  displayName    String
-  avatarUrl      String?
-  bannerUrl      String?
-  bio            String?
-  region         String
-  timezone       String
-  language       String?
-  micPreference  String
-  schedule       String?
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  displayName       String
+  avatarUrl         String?
+  bannerUrl         String?
+  bio               String?
+  region            String
+  timezone          String
+  language          String?
+  micPreference     String
+  schedule          String?
   preferredPlayType String?
   playstyleTraits   Json?
-  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 model Game {
-  id          String     @id @default(cuid())
-  name        String     @unique
-  slug        String     @unique
-  genre       String
-  platform    String     @default("PC")
-  imageUrl    String?
-  isActive    Boolean    @default(true)
-  userGames   UserGame[]
-  lfgPosts    LfgPost[]
-  squads      Squad[]
-  sessions    Session[]
-  clips       Clip[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  genre     String
+  platform  String     @default("PC")
+  imageUrl  String?
+  isActive  Boolean    @default(true)
+  userGames UserGame[]
+  lfgPosts  LfgPost[]
+  squads    Squad[]
+  sessions  Session[]
+  clips     Clip[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 model UserGame {
-  id                String             @id @default(cuid())
-  userId            String
-  gameId            String
-  rank              String
-  role              String
-  hoursPlayed       Int?
-  inputMethod       String?
-  mainCharacters    Json?
-  verifiedStatus    VerificationStatus @default(UNVERIFIED)
-  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  game              Game               @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id             String             @id @default(cuid())
+  userId         String
+  gameId         String
+  rank           String
+  role           String
+  hoursPlayed    Int?
+  inputMethod    String?
+  mainCharacters Json?
+  verifiedStatus VerificationStatus @default(UNVERIFIED)
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game           Game               @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   @@unique([userId, gameId])
 }
 
 model LfgPost {
-  id            String          @id @default(cuid())
-  creatorId     String
-  gameId        String
-  title         String
-  mode          String
-  rankMin       String?
-  rankMax       String?
-  region        String
-  rolesNeeded   Json
-  micRequired   Boolean         @default(true)
-  tone          String
-  schedule      String
-  status        LfgPostStatus   @default(OPEN)
-  expiresAt     DateTime?
-  creator       User            @relation("LfgCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  game          Game            @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  applications  LfgApplication[]
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id           String           @id @default(cuid())
+  creatorId    String
+  gameId       String
+  title        String
+  mode         String
+  rankMin      String?
+  rankMax      String?
+  region       String
+  rolesNeeded  Json
+  micRequired  Boolean          @default(true)
+  tone         String
+  schedule     String
+  status       LfgPostStatus    @default(OPEN)
+  expiresAt    DateTime?
+  creator      User             @relation("LfgCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  game         Game             @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  applications LfgApplication[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([status, createdAt])
+  @@index([creatorId])
+  @@index([gameId, status])
+  @@index([expiresAt])
 }
 
 model LfgApplication {
-  id         String            @id @default(cuid())
-  postId     String
-  userId     String
-  message    String
-  status     ApplicationStatus @default(PENDING)
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  post       LfgPost           @relation(fields: [postId], references: [id], onDelete: Cascade)
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String            @id @default(cuid())
+  postId    String
+  userId    String
+  message   String
+  status    ApplicationStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  post      LfgPost           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([postId, userId])
+  @@index([postId, status])
+  @@index([userId, status])
 }
 
 model Squad {
-  id           String        @id @default(cuid())
+  id           String               @id @default(cuid())
   ownerId      String
   gameId       String
-  name         String        @unique
+  name         String               @unique
   description  String?
-  privacy      SquadPrivacy  @default(INVITE_ONLY)
-  inviteCode   String?       @unique
-  owner        User          @relation("SquadOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  game         Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  privacy      SquadPrivacy         @default(INVITE_ONLY)
+  inviteCode   String?              @unique
+  owner        User                 @relation("SquadOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  game         Game                 @relation(fields: [gameId], references: [id], onDelete: Cascade)
   members      SquadMember[]
+  joinRequests SquadJoinRequest[]
   sessions     SessionParticipant[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 }
 
 model SquadMember {
-  id         String            @id @default(cuid())
-  squadId    String
-  userId     String
-  role       String
-  status     SquadMemberStatus @default(ACTIVE)
-  joinedAt   DateTime          @default(now())
-  squad      Squad             @relation(fields: [squadId], references: [id], onDelete: Cascade)
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String            @id @default(cuid())
+  squadId  String
+  userId   String
+  role     String
+  status   SquadMemberStatus @default(ACTIVE)
+  joinedAt DateTime          @default(now())
+  squad    Squad             @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([squadId, userId])
 }
 
 model Session {
-  id          String               @id @default(cuid())
-  gameId      String
-  createdById String
-  startedAt   DateTime
-  endedAt     DateTime?
-  mode        String
-  notes       String?
-  game        Game                 @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  creator     User                 @relation("SessionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  id           String               @id @default(cuid())
+  gameId       String
+  createdById  String
+  startedAt    DateTime
+  endedAt      DateTime?
+  mode         String
+  notes        String?
+  game         Game                 @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  creator      User                 @relation("SessionCreator", fields: [createdById], references: [id], onDelete: Cascade)
   participants SessionParticipant[]
-  reviews     Review[]
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  reviews      Review[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 }
 
 model SessionParticipant {
-  id          String   @id @default(cuid())
-  sessionId   String
-  userId      String
-  squadId     String?
-  rolePlayed  String
-  outcome     String?
-  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  squad       Squad?   @relation(fields: [squadId], references: [id], onDelete: SetNull)
+  id         String  @id @default(cuid())
+  sessionId  String
+  userId     String
+  squadId    String?
+  rolePlayed String
+  outcome    String?
+  session    Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  squad      Squad?  @relation(fields: [squadId], references: [id], onDelete: SetNull)
 
   @@unique([sessionId, userId])
 }
 
 model Review {
-  id              String           @id @default(cuid())
-  reviewerId      String
-  reviewedId      String
-  sessionId       String
-  reliability     Int
-  communication   Int
-  skillFit        Int
-  teamBehavior    Int
-  repeatTeammate  Boolean          @default(false)
-  tags            Json?
-  comment         String?
-  visibility      ReviewVisibility @default(PUBLIC)
-  reviewer        User             @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
-  reviewed        User             @relation("Reviewed", fields: [reviewedId], references: [id], onDelete: Cascade)
-  session         Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  createdAt       DateTime         @default(now())
+  id             String           @id @default(cuid())
+  reviewerId     String
+  reviewedId     String
+  sessionId      String
+  reliability    Int
+  communication  Int
+  skillFit       Int
+  teamBehavior   Int
+  repeatTeammate Boolean          @default(false)
+  tags           Json?
+  comment        String?
+  visibility     ReviewVisibility @default(PUBLIC)
+  reviewer       User             @relation("Reviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewed       User             @relation("Reviewed", fields: [reviewedId], references: [id], onDelete: Cascade)
+  session        Session          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
 
   @@unique([reviewerId, reviewedId, sessionId])
 }
 
 model ReputationAggregate {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  reliabilityScore Float   @default(0)
-  commsScore      Float    @default(0)
-  skillScore      Float    @default(0)
-  teamBehaviorScore Float  @default(0)
-  toxicityRisk    Float    @default(0)
-  reviewCount     Int      @default(0)
-  uniqueReviewers Int      @default(0)
-  publicBadges    Json?
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  reliabilityScore  Float    @default(0)
+  commsScore        Float    @default(0)
+  skillScore        Float    @default(0)
+  teamBehaviorScore Float    @default(0)
+  toxicityRisk      Float    @default(0)
+  reviewCount       Int      @default(0)
+  uniqueReviewers   Int      @default(0)
+  publicBadges      Json?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt         DateTime @updatedAt
 }
 
 model Clip {
-  id            String   @id @default(cuid())
-  userId        String
-  gameId        String?
-  url           String
-  provider      String
-  title         String
-  tags          Json?
-  thumbnailUrl  String?
-  featured      Boolean  @default(false)
-  visibility    String   @default("public")
-  viewCount     Int      @default(0)
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  game          Game?    @relation(fields: [gameId], references: [id], onDelete: SetNull)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(cuid())
+  userId          String
+  gameId          String?
+  url             String
+  storageKey      String? // cloud storage object key
+  provider        String
+  title           String
+  tags            Json?
+  thumbnailUrl    String?
+  contentType     String?
+  sizeBytes       Int?
+  durationSeconds Float?
+  status          String   @default("active") // active | hidden | deleted
+  featured        Boolean  @default(false)
+  visibility      String   @default("public")
+  viewCount       Int      @default(0)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game            Game?    @relation(fields: [gameId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([status, visibility])
 }
 
 model Notification {
-  id         String   @id @default(cuid())
-  userId     String
-  type       String
-  title      String
-  body       String
-  linkUrl    String?
-  readAt     DateTime?
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType @default(GENERAL)
+  title     String
+  body      String
+  href      String?
+  readAt    DateTime?
+  actorId   String?
+  metadata  Json?
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt, createdAt])
+  @@index([type])
 }
 
 model Subscription {
@@ -354,17 +412,81 @@ model BillingWebhookEvent {
 }
 
 model Report {
-  id              String         @id @default(cuid())
-  reporterId      String
-  targetType      ReportTargetType
-  targetId        String
-  reason          String
-  details         String?
-  severity        SeverityLevel  @default(MEDIUM)
-  status          ReportStatus   @default(OPEN)
-  moderatorId     String?
-  reporter        User           @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
-  moderator       User?          @relation("Moderator", fields: [moderatorId], references: [id], onDelete: SetNull)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id             String             @id @default(cuid())
+  reporterId     String
+  reportedUserId String?
+  targetType     ReportTargetType
+  targetId       String
+  reason         String
+  details        String?
+  severity       SeverityLevel      @default(MEDIUM)
+  status         ReportStatus       @default(OPEN)
+  moderatorId    String?
+  reporter       User               @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser   User?              @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
+  moderator      User?              @relation("Moderator", fields: [moderatorId], references: [id], onDelete: SetNull)
+  actions        ModerationAction[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@index([status, createdAt])
+  @@index([targetType, targetId])
+  @@index([reportedUserId])
+}
+
+model ModerationAction {
+  id          String               @id @default(cuid())
+  reportId    String?
+  moderatorId String
+  type        ModerationActionType
+  targetType  String
+  targetId    String
+  reason      String
+  metadata    Json?
+  report      Report?              @relation(fields: [reportId], references: [id], onDelete: SetNull)
+  moderator   User                 @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime             @default(now())
+
+  @@index([moderatorId, createdAt])
+  @@index([targetType, targetId])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model SquadJoinRequest {
+  id        String   @id @default(cuid())
+  squadId   String
+  userId    String
+  message   String?
+  status    String   @default("pending") // pending | accepted | declined | cancelled
+  squad     Squad    @relation(fields: [squadId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([squadId, userId])
+  @@index([squadId, status])
+  @@index([userId, status])
 }

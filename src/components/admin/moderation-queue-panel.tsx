@@ -13,14 +13,14 @@ type StatusCode = ReportCard["statusCode"];
 const statusOptions: Array<{ value: StatusCode; label: string }> = [
   { value: "OPEN", label: "Open" },
   { value: "IN_REVIEW", label: "In review" },
-  { value: "RESOLVED", label: "Resolved" },
+  { value: "ACTION_TAKEN", label: "Action taken" },
   { value: "DISMISSED", label: "Dismissed" },
 ];
 
 const statusLabelByCode: Record<StatusCode, string> = {
   OPEN: "Queued for moderator action",
   IN_REVIEW: "Pending moderator review",
-  RESOLVED: "Resolved by moderation",
+  ACTION_TAKEN: "Action taken by moderation",
   DISMISSED: "Dismissed by moderation",
 };
 

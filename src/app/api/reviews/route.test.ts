@@ -58,7 +58,7 @@ const validPayload = {
 describe("reviews route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(enforceRateLimit).mockReturnValue({ ok: true, remaining: 19, retryAfterMs: 0 });
+    vi.mocked(enforceRateLimit).mockResolvedValue({ ok: true, remaining: 19, retryAfterMs: 0 });
   });
 
   it("returns 401 when unauthenticated", async () => {
@@ -76,7 +76,7 @@ describe("reviews route", () => {
 
   it("returns 429 when rate limited", async () => {
     vi.mocked(getServerSession).mockResolvedValue({ user: { id: "u1", username: "alpha" } } as never);
-    vi.mocked(enforceRateLimit).mockReturnValue({ ok: false, remaining: 0, retryAfterMs: 45_000 });
+    vi.mocked(enforceRateLimit).mockResolvedValue({ ok: false, remaining: 0, retryAfterMs: 45_000 });
 
     const request = new Request("http://localhost/api/reviews", {
       method: "POST",

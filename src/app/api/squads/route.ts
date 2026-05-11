@@ -1,10 +1,10 @@
 import { randomBytes } from "crypto";
 
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
 
-import { authOptions } from "@/lib/auth/options";
+import { ok, fail } from "@/lib/api-response";
+import { handleRouteError } from "@/lib/errors";
+import { requireUser } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -20,73 +20,71 @@ const createSquadSchema = z.object({
 
 export async function GET() {
   const squads = await readSquads();
-  return NextResponse.json({ squads });
+  return ok({ squads });
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  }
+  try {
+    const user = await requireUser();
 
-  const rateLimit = await enforceRateLimit({
-    key: `squad-create:${session.user.id}:${getClientIp(request)}`,
-    limit: 10,
-    windowMs: 60_000,
-  });
+    const rateLimit = await enforceRateLimit({
+      key: `squad-create:${user.id}:${getClientIp(request)}`,
+      limit: 10,
+      windowMs: 60_000,
+    });
 
-  if (!rateLimit.ok) {
-    return NextResponse.json(
-      { error: "Too many squad creation attempts. Try again shortly." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
-    );
-  }
+    if (!rateLimit.ok) {
+      return fail("RATE_LIMITED", "Too many squad creation attempts. Try again shortly.", 429);
+    }
 
-  const body = await request.json().catch(() => null);
-  const parsed = createSquadSchema.safeParse(body);
+    const body = await request.json().catch(() => null);
+    const parsed = createSquadSchema.safeParse(body);
 
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid squad payload." }, { status: 400 });
-  }
+    if (!parsed.success) {
+      return fail("VALIDATION_ERROR", "Invalid squad payload.", 400);
+    }
 
-  const game = await db.game.findUnique({ where: { slug: parsed.data.gameSlug.toLowerCase() }, select: { id: true } });
-  if (!game) {
-    return NextResponse.json({ error: "Unknown game." }, { status: 400 });
-  }
+    const game = await db.game.findUnique({ where: { slug: parsed.data.gameSlug.toLowerCase() }, select: { id: true } });
+    if (!game) {
+      return fail("NOT_FOUND", "Unknown game.", 400);
+    }
 
-  const inviteCode = parsed.data.privacy === "PUBLIC" ? null : randomBytes(4).toString("hex").toUpperCase();
+    const inviteCode = parsed.data.privacy === "PUBLIC" ? null : randomBytes(4).toString("hex").toUpperCase();
 
-  const squad = await db.squad.create({
-    data: {
-      ownerId: session.user.id,
-      gameId: game.id,
-      name: parsed.data.name.trim(),
-      description: parsed.data.description?.trim() || null,
-      privacy: parsed.data.privacy,
-      inviteCode,
-      members: {
-        create: {
-          userId: session.user.id,
-          role: "Owner",
-          status: "ACTIVE",
+    const squad = await db.squad.create({
+      data: {
+        ownerId: user.id,
+        gameId: game.id,
+        name: parsed.data.name.trim(),
+        description: parsed.data.description?.trim() || null,
+        privacy: parsed.data.privacy,
+        inviteCode,
+        members: {
+          create: {
+            userId: user.id,
+            role: "Owner",
+            status: "ACTIVE",
+          },
         },
       },
-    },
-    select: {
-      id: true,
-      name: true,
-      privacy: true,
-      inviteCode: true,
-    },
-  });
+      select: {
+        id: true,
+        name: true,
+        privacy: true,
+        inviteCode: true,
+      },
+    });
 
-  await createUserNotification({
-    userId: session.user.id,
-    type: "squad_created",
-    title: "Squad created successfully",
-    body: `${squad.name} is ready. Invite teammates and start building chemistry.`,
-    linkUrl: "/squads",
-  });
+    await createUserNotification({
+      userId: user.id,
+      type: "GENERAL",
+      title: "Squad created successfully",
+      body: `${squad.name} is ready. Invite teammates and start building chemistry.`,
+      href: "/squads",
+    });
 
-  return NextResponse.json({ squad }, { status: 201 });
+    return ok({ squad }, { status: 201 });
+  } catch (error) {
+    return handleRouteError(error);
+  }
 }

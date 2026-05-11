@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
 
-import { authOptions } from "@/lib/auth/options";
+import { ok, fail } from "@/lib/api-response";
+import { handleRouteError } from "@/lib/errors";
+import { requireUser } from "@/lib/auth/require-user";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -19,93 +19,90 @@ type RouteContext = {
 };
 
 export async function POST(request: Request, context: RouteContext) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-  }
+  try {
+    const user = await requireUser();
+    const { postId } = await context.params;
 
-  const { postId } = await context.params;
+    const rateLimit = await enforceRateLimit({
+      key: `lfg-apply:${user.id}:${getClientIp(request)}`,
+      limit: 20,
+      windowMs: 60_000,
+    });
 
-  const rateLimit = await enforceRateLimit({
-    key: `lfg-apply:${session.user.id}:${getClientIp(request)}`,
-    limit: 20,
-    windowMs: 60_000,
-  });
+    if (!rateLimit.ok) {
+      return fail("RATE_LIMITED", "Too many join requests. Try again shortly.", 429);
+    }
 
-  if (!rateLimit.ok) {
-    return NextResponse.json(
-      { error: "Too many join requests. Try again shortly." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
-    );
-  }
+    const body = await request.json().catch(() => null);
+    const parsed = applySchema.safeParse(body);
 
-  const body = await request.json().catch(() => null);
-  const parsed = applySchema.safeParse(body);
+    if (!parsed.success) {
+      return fail("VALIDATION_ERROR", "Invalid application payload.", 400);
+    }
 
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid application payload." }, { status: 400 });
-  }
-
-  const post = await db.lfgPost.findUnique({
-    where: { id: postId },
-    select: {
-      id: true,
-      creatorId: true,
-      status: true,
-    },
-  });
-
-  if (!post || post.status !== "OPEN") {
-    return NextResponse.json({ error: "Post is not available." }, { status: 404 });
-  }
-
-  if (post.creatorId === session.user.id) {
-    return NextResponse.json({ error: "You cannot apply to your own post." }, { status: 400 });
-  }
-
-  const existing = await db.lfgApplication.findUnique({
-    where: {
-      postId_userId: {
-        postId,
-        userId: session.user.id,
+    const post = await db.lfgPost.findUnique({
+      where: { id: postId },
+      select: {
+        id: true,
+        creatorId: true,
+        status: true,
       },
-    },
-    select: { id: true },
-  });
+    });
 
-  if (existing) {
-    return NextResponse.json({ error: "You already applied to this post." }, { status: 409 });
+    if (!post || post.status !== "OPEN") {
+      return fail("NOT_FOUND", "Post is not available.", 404);
+    }
+
+    if (post.creatorId === user.id) {
+      return fail("FORBIDDEN", "You cannot apply to your own post.", 400);
+    }
+
+    const existing = await db.lfgApplication.findUnique({
+      where: {
+        postId_userId: {
+          postId,
+          userId: user.id,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      return fail("CONFLICT", "You already applied to this post.", 409);
+    }
+
+    const application = await db.lfgApplication.create({
+      data: {
+        postId,
+        userId: user.id,
+        message: parsed.data.message?.trim() || "Interested in joining your stack.",
+        status: "PENDING",
+      },
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+
+    await createUserNotification({
+      userId: post.creatorId,
+      type: "LFG_JOIN_REQUEST",
+      title: "New join request on your LFG post",
+      body: `${user.username} requested to join your stack.`,
+      href: "/lfg",
+    });
+
+    await createUserNotification({
+      userId: user.id,
+      type: "GENERAL",
+      title: "Join request sent",
+      body: "Your application was submitted and is waiting for review.",
+      href: "/lfg",
+    });
+
+    return ok({ application }, { status: 201 });
+  } catch (error) {
+    return handleRouteError(error);
   }
-
-  const application = await db.lfgApplication.create({
-    data: {
-      postId,
-      userId: session.user.id,
-      message: parsed.data.message?.trim() || "Interested in joining your stack.",
-      status: "PENDING",
-    },
-    select: {
-      id: true,
-      status: true,
-      createdAt: true,
-    },
-  });
-
-  await createUserNotification({
-    userId: post.creatorId,
-    type: "lfg_application_received",
-    title: "New join request on your LFG post",
-    body: `${session.user.username} requested to join your stack.`,
-    linkUrl: "/lfg",
-  });
-
-  await createUserNotification({
-    userId: session.user.id,
-    type: "lfg_application_submitted",
-    title: "Join request sent",
-    body: "Your application was submitted and is waiting for review.",
-    linkUrl: "/lfg",
-  });
-
-  return NextResponse.json({ application }, { status: 201 });
 }

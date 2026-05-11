@@ -12,9 +12,8 @@ vi.mock("@/lib/db", () => ({
   },
 }));
 
-import { getServerSession } from "next-auth";
-
 import { db } from "@/lib/db";
+import { getServerSession } from "next-auth";
 import { GET } from "@/app/api/notifications/route";
 
 describe("notifications route", () => {
@@ -26,11 +25,12 @@ describe("notifications route", () => {
     vi.mocked(getServerSession).mockResolvedValue(null);
 
     const response = await GET();
-    const body = (await response.json()) as { items: Array<{ persisted: boolean }> };
+    const body = (await response.json()) as { success: boolean; data: { items: Array<{ persisted: boolean }> } };
 
     expect(response.status).toBe(200);
-    expect(body.items.length).toBeGreaterThan(0);
-    expect(body.items.every((item) => item.persisted === false)).toBe(true);
+    expect(body.success).toBe(true);
+    expect(body.data.items.length).toBeGreaterThan(0);
+    expect(body.data.items.every((item) => item.persisted === false)).toBe(true);
   });
 
   it("maps persisted notifications for authenticated users", async () => {
@@ -40,8 +40,8 @@ describe("notifications route", () => {
         id: "n1",
         title: "Squad invite",
         body: "A squad invited you.",
-        linkUrl: "/squads",
-        type: "squad_invite",
+        href: "/squads",
+        type: "SQUAD_INVITE",
         createdAt: new Date("2026-05-08T10:00:00.000Z"),
         readAt: null,
       },
@@ -49,8 +49,8 @@ describe("notifications route", () => {
         id: "n2",
         title: "Billing updated",
         body: "Subscription status changed.",
-        linkUrl: null,
-        type: "billing_subscription_updated",
+        href: null,
+        type: "ACCOUNT_SECURITY",
         createdAt: new Date("2026-05-08T09:00:00.000Z"),
         readAt: new Date("2026-05-08T09:30:00.000Z"),
       },
@@ -58,11 +58,15 @@ describe("notifications route", () => {
 
     const response = await GET();
     const body = (await response.json()) as {
-      items: Array<{ id: string; category: string; priority: string; href: string; resolved: boolean; persisted: boolean }>;
+      success: boolean;
+      data: {
+        items: Array<{ id: string; category: string; priority: string; href: string; resolved: boolean; persisted: boolean }>;
+      };
     };
 
     expect(response.status).toBe(200);
-    expect(body.items).toEqual([
+    expect(body.success).toBe(true);
+    expect(body.data.items).toEqual([
       expect.objectContaining({
         id: "n1",
         category: "invite",

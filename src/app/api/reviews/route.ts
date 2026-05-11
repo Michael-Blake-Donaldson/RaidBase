@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+import { ok, fail } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
 import { getClientIp } from "@/lib/request";
@@ -25,7 +25,7 @@ const reviewSchema = z.object({
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    return fail("UNAUTHORIZED", "Authentication required.", 401);
   }
 
   const rateLimit = await enforceRateLimit({
@@ -35,17 +35,16 @@ export async function POST(request: Request) {
   });
 
   if (!rateLimit.ok) {
-    return NextResponse.json(
-      { error: "Too many review attempts." },
-      { status: 429, headers: { "Retry-After": String(Math.ceil(rateLimit.retryAfterMs / 1000)) } },
-    );
+    const resp = fail("RATE_LIMITED", "Too many review attempts.", 429);
+    resp.headers.set("Retry-After", String(Math.ceil(rateLimit.retryAfterMs / 1000)));
+    return resp;
   }
 
   const body = await request.json().catch(() => null);
   const parsed = reviewSchema.safeParse(body);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid review payload." }, { status: 400 });
+    return fail("VALIDATION_ERROR", "Invalid review payload.", 400);
   }
 
   const reviewed = await db.user.findUnique({
@@ -56,11 +55,11 @@ export async function POST(request: Request) {
   });
 
   if (!reviewed) {
-    return NextResponse.json({ error: "Reviewed user not found." }, { status: 404 });
+    return fail("NOT_FOUND", "Reviewed user not found.", 404);
   }
 
   if (reviewed.id === session.user.id) {
-    return NextResponse.json({ error: "You cannot review yourself." }, { status: 400 });
+    return fail("BAD_REQUEST", "You cannot review yourself.", 400);
   }
 
   const participantCount = await db.sessionParticipant.count({
@@ -73,10 +72,7 @@ export async function POST(request: Request) {
   });
 
   if (participantCount < 2) {
-    return NextResponse.json(
-      { error: "Review requires a shared verified session between reviewer and reviewed user." },
-      { status: 400 },
-    );
+    return fail("FORBIDDEN", "Review requires a shared verified session between reviewer and reviewed user.", 400);
   }
 
   try {
@@ -101,22 +97,22 @@ export async function POST(request: Request) {
     await createUserNotifications([
       {
         userId: reviewed.id,
-        type: "review_received",
+        type: "REVIEW_RECEIVED",
         title: "New session review received",
         body: `${session.user.username} submitted a review for your recent session.`,
-        linkUrl: `/profile/${reviewed.username}`,
+        href: `/profile/${reviewed.username}`,
       },
       {
         userId: session.user.id,
-        type: "review_submitted",
+        type: "GENERAL",
         title: "Review submitted",
         body: "Your review has been recorded and trust metrics were refreshed.",
-        linkUrl: "/settings",
+        href: "/settings",
       },
     ]);
 
-    return NextResponse.json({ review }, { status: 201 });
+    return ok({ review }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Duplicate review for this session is not allowed." }, { status: 409 });
+    return fail("CONFLICT", "Duplicate review for this session is not allowed.", 409);
   }
 }

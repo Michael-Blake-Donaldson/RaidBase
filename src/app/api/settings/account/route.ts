@@ -1,8 +1,8 @@
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 
+import { ok, fail } from "@/lib/api-response";
 import { authOptions } from "@/lib/auth/options";
 import { db } from "@/lib/db";
 import { emitObservabilityEvent, getRequestId } from "@/lib/observability";
@@ -20,7 +20,7 @@ export async function DELETE(request: Request) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Authentication required.", requestId }, { status: 401 });
+    return fail("UNAUTHORIZED", "Authentication required.", 401);
   }
 
   const clientIp = getClientIp(request);
@@ -41,28 +41,22 @@ export async function DELETE(request: Request) {
       },
     });
 
-    return NextResponse.json(
-      { error: "Too many account deletion attempts. Please try again later.", requestId },
-      {
-        status: 429,
-        headers: {
-          "retry-after": String(Math.ceil(rateLimit.retryAfterMs / 1000)),
-        },
-      },
-    );
+    const resp = fail("RATE_LIMITED", "Too many account deletion attempts. Please try again later.", 429);
+    resp.headers.set("retry-after", String(Math.ceil(rateLimit.retryAfterMs / 1000)));
+    return resp;
   }
 
   const payload = await request.json().catch(() => null);
   const parsed = deleteAccountSchema.safeParse(payload);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid account deletion payload.", requestId }, { status: 400 });
+    return fail("VALIDATION_ERROR", "Invalid account deletion payload.", 400);
   }
 
   const { username, password } = parsed.data;
 
   if (session.user.username !== username.trim()) {
-    return NextResponse.json({ error: "Confirmation username does not match your account.", requestId }, { status: 400 });
+    return fail("VALIDATION_ERROR", "Confirmation username does not match your account.", 400);
   }
 
   const user = await db.user.findUnique({
@@ -74,11 +68,11 @@ export async function DELETE(request: Request) {
   });
 
   if (!user) {
-    return NextResponse.json({ error: "Account not found.", requestId }, { status: 404 });
+    return fail("NOT_FOUND", "Account not found.", 404);
   }
 
   if (!user.passwordHash) {
-    return NextResponse.json({ error: "Password confirmation is unavailable for this account.", requestId }, { status: 409 });
+    return fail("CONFLICT", "Password confirmation is unavailable for this account.", 409);
   }
 
   const isValidPassword = await bcrypt.compare(password, user.passwordHash);
@@ -94,7 +88,7 @@ export async function DELETE(request: Request) {
       },
     });
 
-    return NextResponse.json({ error: "Password verification failed.", requestId }, { status: 403 });
+    return fail("FORBIDDEN", "Password verification failed.", 403);
   }
 
   await db.user.delete({ where: { id: user.id } });
@@ -109,5 +103,5 @@ export async function DELETE(request: Request) {
     },
   });
 
-  return NextResponse.json({ ok: true, requestId });
+  return ok({ deleted: true });
 }

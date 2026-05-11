@@ -61,7 +61,7 @@ const severityLabel: Record<SeverityLevel, ReportCard["severity"]> = {
 const statusLabel: Record<ReportStatus, string> = {
   OPEN: "Queued for moderator action",
   IN_REVIEW: "Pending moderator review",
-  RESOLVED: "Resolved by moderation",
+  ACTION_TAKEN: "Resolved by moderation",
   DISMISSED: "Dismissed by moderation",
 };
 

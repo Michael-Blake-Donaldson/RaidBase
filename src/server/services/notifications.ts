@@ -1,11 +1,14 @@
+import type { NotificationType } from "@prisma/client";
 import { db } from "@/lib/db";
 
 type CreateUserNotificationInput = {
   userId: string;
-  type: string;
+  type: NotificationType;
   title: string;
   body: string;
-  linkUrl?: string | null;
+  href?: string | null;
+  actorId?: string | null;
+  metadata?: Record<string, unknown>;
 };
 
 export async function createUserNotification(input: CreateUserNotificationInput) {
@@ -22,7 +25,9 @@ export async function createUserNotification(input: CreateUserNotificationInput)
       type: input.type,
       title,
       body,
-      linkUrl: input.linkUrl?.trim() || null,
+      href: input.href?.trim() ?? null,
+      actorId: input.actorId ?? null,
+      metadata: input.metadata ? (input.metadata as object) : undefined,
     },
     select: {
       id: true,
@@ -44,7 +49,9 @@ export async function createUserNotifications(inputs: CreateUserNotificationInpu
       type: entry.type,
       title: entry.title.trim(),
       body: entry.body.trim(),
-      linkUrl: entry.linkUrl?.trim() || null,
+      href: entry.href?.trim() ?? null,
+      actorId: entry.actorId ?? null,
+      metadata: entry.metadata ? (entry.metadata as object) : undefined,
     })),
   });
 }

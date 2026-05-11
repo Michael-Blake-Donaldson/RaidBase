@@ -90,10 +90,10 @@ export async function POST(request: Request) {
 
         await createUserNotification({
           userId,
-          type: "billing_checkout_completed",
+          type: "ACCOUNT_SECURITY",
           title: "Pro checkout completed",
           body: "Your subscription is now active and premium entitlements are enabled.",
-          linkUrl: "/settings",
+          href: "/settings",
         });
       }
     }
@@ -118,10 +118,10 @@ export async function POST(request: Request) {
 
       await createUserNotification({
         userId,
-        type: "billing_subscription_updated",
+        type: "ACCOUNT_SECURITY",
         title: "Subscription status updated",
         body: `Stripe reported status: ${subscription.status.replaceAll("_", " ")}.`,
-        linkUrl: "/settings",
+        href: "/settings",
       });
     }
   }
@@ -141,10 +141,10 @@ export async function POST(request: Request) {
 
         await createUserNotification({
           userId,
-          type: "billing_payment_failed",
+          type: "ACCOUNT_SECURITY",
           title: "Payment failed",
           body: "We could not renew your subscription. Update payment details in billing portal.",
-          linkUrl: "/settings",
+          href: "/settings",
         });
       }
     }
